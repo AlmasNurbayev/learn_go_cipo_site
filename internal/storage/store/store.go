@@ -37,7 +37,7 @@ func GetStore(db *sqlx.DB) ([]Model, error) {
 	query := "SELECT * FROM STORE"
 	//
 	params := map[string]interface{}{
-		"id":      19,
+		"id":      []int{1, 7},
 		"name_1c": "name",
 		"id_1c":   nil,
 	}

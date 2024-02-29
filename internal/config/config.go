@@ -9,8 +9,8 @@ import (
 )
 
 type Envs struct {
-	DB_HOST string `env:"DB_HOST"`
-	DB_PORT int `env:"DB_PORT"`
+	DB_HOST     string `env:"DB_HOST"`
+	DB_PORT     int    `env:"DB_PORT"`
 	DB_USERNAME string `env:"DB_USERNAME"`
 	DB_PASSWORD string `env:"DB_PASSWORD"`
 	DB_DATABASE string `env:"DB_DATABASE"`
@@ -18,13 +18,16 @@ type Envs struct {
 }
 
 type Config struct {
-	Env string `yaml:"env" env-required:"true"`
+	Env    string `yaml:"env" env-required:"true"`
 	Server struct {
-		Http_port    int `yaml:"http_port" env-required:"true"`
-		Ssl_port     int `yaml:"ssl_port" env-required:"true"`
+		Http_port    int    `yaml:"http_port" env-required:"true"`
+		Ssl_port     int    `yaml:"ssl_port" env-required:"true"`
 		Timeout      string `yaml:"timeout" env-required:"true"`
 		Idle_timeout string `yaml:"idle_timeout" env-required:"true"`
-	}  `yaml:"server"`
+	} `yaml:"server"`
+	Db struct {
+		Migrations_path string `yaml:"migrations_path" env-required:"true"`
+	} `yaml:"db"`
 }
 
 type MultiConfig struct {
@@ -32,16 +35,16 @@ type MultiConfig struct {
 	Config
 }
 
-func MustLoad () *MultiConfig {
+func MustLoad() *MultiConfig {
 
 	var config Config
 	var envs Envs
-	
+
 	//
 	godotenv.Load(".env")
 	errEnv := cleanenv.ReadEnv(&envs)
 	if errEnv != nil {
-    log.Fatalf("cannot read env: %s", errEnv)
+		log.Fatalf("cannot read env: %s", errEnv)
 	}
 
 	if _, err := os.Stat(os.Getenv("CONFIG_PATH")); os.IsNotExist(err) {

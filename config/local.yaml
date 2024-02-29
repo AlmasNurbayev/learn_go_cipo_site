@@ -4,4 +4,6 @@ server:
   ssl_port: 8086
   timeout: 4s
   idle_timeout: 60s
+db:
+  migrations_path: 'internal/storage/migrations'  
 

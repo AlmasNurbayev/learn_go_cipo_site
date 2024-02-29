@@ -9,7 +9,3 @@ var (
 	ErrExist    = errors.New("already exist")
 	ErrUnknown  = errors.New("unknown error")
 )
-
-
-
-

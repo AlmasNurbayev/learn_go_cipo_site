@@ -17,11 +17,11 @@ func Testdb(dbx *sqlx.DB, log *slog.Logger) {
 	if err != nil {
 		log.Error("cannot create store: " + err.Error())
 	}
-	log.Info("store created: ", res)
+	log.Debug("store created: ", res)
 
 	res2, err := store.GetStore(dbx)
 	if err != nil {
 		log.Error("cannot get store: " + err.Error())
 	}
-	log.Info("stores get: ", res2)
+	log.Debug("stores get: ", res2)
 }

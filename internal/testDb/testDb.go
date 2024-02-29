@@ -1,7 +1,7 @@
 package testdb
 
 import (
-	"cipo_cite_server/cmd/internal/storage/store"
+	"cipo_cite_server/internal/storage/store"
 	"log/slog"
 	"time"
 

@@ -1,7 +1,7 @@
 package store
 
 import (
-	"cipo_cite_server/cmd/internal/utils"
+	"cipo_cite_server/internal/utils"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"cipo_cite_server/cmd/internal/config"
-	"cipo_cite_server/cmd/internal/storage/postgres"
-	testdb "cipo_cite_server/cmd/internal/testDb"
+	"cipo_cite_server/internal/config"
+	"cipo_cite_server/internal/storage/postgres"
+	testdb "cipo_cite_server/internal/testDb"
 
 	"fmt"
 	"log/slog"

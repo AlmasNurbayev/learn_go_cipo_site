@@ -3,6 +3,7 @@ package postgres
 import (
 	"fmt"
 	"log/slog"
+	"os"
 
 	"cipo_cite_server/internal/config"
 
@@ -53,7 +54,7 @@ func InitPostgresStore(env config.Envs, log *slog.Logger) *sqlx.DB {
 	dbx.DB.Ping()
 	if err != nil {
 		log.Error("cannot connect to database: " + err.Error())
-		panic(err)
+		os.Exit(1)
 	}
 	log.Info("DB connected: " + env.DB_DATABASE)
 	return dbx

@@ -45,15 +45,18 @@ func MustLoad() *MultiConfig {
 	godotenv.Load(".env")
 	errEnv := cleanenv.ReadEnv(&envs)
 	if errEnv != nil {
-		log.Fatalf("cannot read env: %s", errEnv)
+		log.Printf("cannot read env: %s", errEnv)
+		os.Exit(1)
 	}
 
 	if _, err := os.Stat(os.Getenv("CONFIG_PATH")); os.IsNotExist(err) {
-		log.Fatalf("config file does not exist: %s", envs.CONFIG_PATH)
+		log.Printf("config file does not exist: %s", envs.CONFIG_PATH)
+		os.Exit(1)
 	}
 
 	if errConfig := cleanenv.ReadConfig(os.Getenv("CONFIG_PATH"), &config); errConfig != nil {
-		log.Fatalf("cannot read config file: %s", errConfig)
+		log.Printf("cannot read config file: %s", errConfig)
+		os.Exit(1)
 	}
 
 	return &MultiConfig{Envs: envs, Config: config}

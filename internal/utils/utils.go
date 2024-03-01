@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -60,4 +61,15 @@ func SliceToWhereString(slice interface{}) string {
 	}
 	// Объединяем строки через запятую
 	return "(" + strings.Join(strSlice, ",") + ")"
+}
+
+func PrintAsJSON(data interface{}) {
+	var p []byte
+	//    var err := error
+	p, err := json.MarshalIndent(data, "", "\t")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("%s \n", p)
 }

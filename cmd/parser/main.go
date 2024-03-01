@@ -21,7 +21,14 @@ func main() {
 	db := postgres.InitPostgresStore(cfg.Envs, log)
 
 	// init moved files
-	parser.MovedInputFiles(cfg.Config, log)
+	//files := parser.MovedInputFiles(cfg.Config, log)
+	// временный массив
+	files := []parser.InputFilesT{
+		{TypeFile: "classificator", PathFile: "input/import0_1.xml"},
+		{TypeFile: "offer", PathFile: "input/offers0_1.xml"},
+	}
+
+	parser.Parser(&files, log)
 
 	// init parser
 

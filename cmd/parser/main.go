@@ -3,6 +3,7 @@ package main
 import (
 	"cipo_cite_server/internal/config"
 	"cipo_cite_server/internal/logger"
+	"cipo_cite_server/internal/parser"
 	"cipo_cite_server/internal/storage/postgres"
 )
 
@@ -20,6 +21,8 @@ func main() {
 	db := postgres.InitPostgresStore(cfg.Envs, log)
 
 	// init moved files
+	parser.MovedInputFiles(cfg.Config, log)
+
 	// init parser
 
 	// TODO: graceful shutdown

@@ -1,14 +1,14 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS users(
- id SERIAL PRIMARY KEY,
+ id BIGSERIAL PRIMARY KEY,
  email VARCHAR NOT NULL,
  name VARCHAR,
  password VARCHAR,
  salt VARCHAR,
  role VARCHAR,
- changed_at TIMESTAMPZ NOT NULL, 
- created_at TIMESTAMPZ DEFAULT CURRENT_TIMESTAMP,
+ changed_at TIMESTAMPTZ, 
+ created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 -- +goose StatementEnd
 

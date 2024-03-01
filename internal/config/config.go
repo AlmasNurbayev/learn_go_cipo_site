@@ -25,9 +25,10 @@ type Config struct {
 		Timeout      string `yaml:"timeout" env-required:"true"`
 		Idle_timeout string `yaml:"idle_timeout" env-required:"true"`
 	} `yaml:"server"`
-	Db struct {
-		Migrations_path string `yaml:"migrations_path" env-required:"true"`
-	} `yaml:"db"`
+	Parser struct {
+		Classificator_name string `yaml:"classificator_name" env-required:"true"`
+		Offer_name         string `yaml:"offer_name" env-required:"true"`
+	} `yaml:"parser"`
 }
 
 type MultiConfig struct {

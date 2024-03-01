@@ -3,13 +3,9 @@ package main
 import (
 	"cipo_cite_server/internal/config"
 	"cipo_cite_server/internal/logger"
+	"cipo_cite_server/internal/storage"
 	"cipo_cite_server/internal/storage/postgres"
-	"embed"
-
-	"github.com/pressly/goose/v3"
 )
-
-var embedMigrations embed.FS
 
 func main() {
 
@@ -24,15 +20,7 @@ func main() {
 	// init storage: pgx, sqlx
 	db := postgres.InitPostgresStore(cfg.Envs, log)
 
-	goose.SetBaseFS(embedMigrations)
-
-	if err := goose.SetDialect("postgres"); err != nil {
-		panic(err)
-	}
-
-	if err := goose.Up(db.DB, cfg.Db.Migrations_path); err != nil {
-		panic(err)
-	}
+	storage.MigrationsUp(db)
 
 	// init moved files
 	// init parser

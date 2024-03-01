@@ -4,6 +4,8 @@ server:
   ssl_port: 8086
   timeout: 4s
   idle_timeout: 60s
-db:
-  migrations_path: 'internal/storage/migrations'  
+parser:
+  classificator_name: import0_1.xml
+  offer_name: offers0_1.xml
+
 

@@ -3,6 +3,8 @@ package logger
 import (
 	"log/slog"
 	"os"
+
+	"github.com/lmittmann/tint"
 )
 
 const (
@@ -19,11 +21,11 @@ func InitLogger(env string) *slog.Logger {
 
 	switch env {
 	case envLocal:
-		log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		log = slog.New(tint.NewHandler(os.Stdout, &tint.Options{
 			Level: slog.LevelDebug,
 		}))
 	case envDev:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		log = slog.New(tint.NewHandler(os.Stdout, &tint.Options{
 			Level: slog.LevelDebug,
 		}))
 	case envProd:

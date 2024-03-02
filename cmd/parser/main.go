@@ -28,7 +28,7 @@ func main() {
 		{TypeFile: "offer", PathFile: "input/offers0_1.xml"},
 	}
 
-	parser.Parser(&files, log)
+	parser.ReadAndParse(&files, log)
 
 	// init parser
 

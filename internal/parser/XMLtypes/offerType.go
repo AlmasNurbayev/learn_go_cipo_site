@@ -1,7 +1,7 @@
 package parser
 
 // КоммерческаяИнформация was generated 2024-03-01 19:46:09 by https://xml-to-go.github.io/ in Ukraine.
-type OffersType struct {
+type OfferType struct {
 	КоммерческаяИнформация struct {
 		XMLName          string `xml:"КоммерческаяИнформация"`
 		Text             string `xml:",chardata"`
@@ -122,19 +122,19 @@ type OffersType struct {
 					Цены struct {
 						Text string `xml:",chardata"`
 						Цена []struct {
-							Text          string `xml:",chardata"`
-							Представление string `xml:"Представление"`
-							ИдТипаЦены    string `xml:"ИдТипаЦены"`
-							ЦенаЗаЕдиницу string `xml:"ЦенаЗаЕдиницу"`
-							Валюта        string `xml:"Валюта"`
-							Коэффициент   string `xml:"Коэффициент"`
+							Text          string  `xml:",chardata"`
+							Представление string  `xml:"Представление"`
+							ИдТипаЦены    string  `xml:"ИдТипаЦены"`
+							ЦенаЗаЕдиницу float32 `xml:"ЦенаЗаЕдиницу"`
+							Валюта        string  `xml:"Валюта"`
+							Коэффициент   string  `xml:"Коэффициент"`
 						} `xml:"Цена"`
 					} `xml:"Цены"`
-					Количество string `xml:"Количество"`
+					Количество float32 `xml:"Количество"`
 					Склад      struct {
-						Text               string `xml:",chardata"`
-						ИдСклада           string `xml:"ИдСклада,attr"`
-						КоличествоНаСкладе string `xml:"КоличествоНаСкладе,attr"`
+						Text               string  `xml:",chardata"`
+						ИдСклада           string  `xml:"ИдСклада,attr"`
+						КоличествоНаСкладе float32 `xml:"КоличествоНаСкладе,attr"`
 					} `xml:"Склад"`
 				} `xml:"Предложение"`
 			} `xml:"Предложения"`

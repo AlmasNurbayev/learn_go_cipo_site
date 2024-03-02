@@ -1,2 +1,4 @@
 .env
 input/**
+import.json
+offer.json

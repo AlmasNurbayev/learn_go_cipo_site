@@ -22,7 +22,7 @@ func Insert(db *sqlx.DB,
 	tableName string,
 	data interface{},
 	skippedFields []string,
-) (int, error) {
+) (int64, error) {
 
 	dataType := reflect.TypeOf(data)
 
@@ -72,7 +72,7 @@ func Insert(db *sqlx.DB,
 		return 0, err
 	}
 	defer rows.Close()
-	var res int
+	var res int64
 
 	for rows.Next() {
 		err := rows.Scan(&res)

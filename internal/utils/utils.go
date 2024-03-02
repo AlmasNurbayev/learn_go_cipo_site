@@ -3,6 +3,8 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
+	"os"
 	"strings"
 )
 
@@ -63,6 +65,7 @@ func SliceToWhereString(slice interface{}) string {
 	return "(" + strings.Join(strSlice, ",") + ")"
 }
 
+// печатаем структуру как JSON
 func PrintAsJSON(data interface{}) {
 	var p []byte
 	//    var err := error
@@ -72,4 +75,28 @@ func PrintAsJSON(data interface{}) {
 		return
 	}
 	fmt.Printf("%s \n", p)
+}
+
+func SaveStructToJSONFile(data interface{}, fileName string, log *slog.Logger) {
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		log.Error("Ошибка маршалинга в JSON:", err)
+		return
+	}
+
+	// Запись JSON данных в файл
+	err = os.WriteFile(fileName, jsonData, 0755)
+	if err != nil {
+		log.Error("Ошибка записи в файл:", err)
+		return
+	}
+
+	log.Debug("Структура успешно сохранена в файл " + fileName)
+}
+
+func Ternary(condition bool, trueVal, falseVal interface{}) interface{} {
+	if condition {
+		return trueVal
+	}
+	return falseVal
 }

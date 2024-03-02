@@ -1,4 +1,4 @@
-package parser
+package XMLTypes
 
 // КоммерческаяИнформация was generated 2024-03-01 19:49:36 by https://xml-to-go.github.io/ in Ukraine.
 type ImportType struct {

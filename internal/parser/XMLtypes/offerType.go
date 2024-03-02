@@ -1,4 +1,4 @@
-package parser
+package XMLTypes
 
 // КоммерческаяИнформация was generated 2024-03-01 19:46:09 by https://xml-to-go.github.io/ in Ukraine.
 type OfferType struct {

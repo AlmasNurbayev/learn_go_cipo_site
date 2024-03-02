@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS registrators
  name_catalog VARCHAR NOT NULL,
  name_class VARCHAR NOT NULL,
  ver_schema VARCHAR NOT NULL,
- only_change BOOLEAN NOT NULL,
+ is_only_change BOOLEAN NOT NULL,
  changed_at TIMESTAMPTZ, 
  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );

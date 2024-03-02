@@ -28,6 +28,7 @@ type Config struct {
 	Parser struct {
 		Classificator_name string `yaml:"classificator_name" env-required:"true"`
 		Offer_name         string `yaml:"offer_name" env-required:"true"`
+		Default_user_id    int64  `yaml:"default_user_id" env-required:"true"`
 	} `yaml:"parser"`
 }
 

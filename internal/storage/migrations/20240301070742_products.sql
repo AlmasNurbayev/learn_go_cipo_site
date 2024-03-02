@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS products (
   sex INT,
   product_folder VARCHAR,
   main_color VARCHAR,
-  public_web BOOLEAN,
+  is_public_web BOOLEAN,
   changed_at TIMESTAMPTZ, 
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );

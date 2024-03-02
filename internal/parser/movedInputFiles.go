@@ -9,7 +9,7 @@ import (
 
 // находим в папке Input файлы, создаем папку Webdata_дата_время,
 // перемещаем туда offers0_1.xml и import0_1.xml
-func MovedInputFiles(cfg config.Config, log *slog.Logger) []InputFilesT {
+func MovedInputFiles(cfg config.Config, log *slog.Logger) (*MovedInputFilesT, error) {
 
 	currentTime := time.Now()
 	folderName := "input/webdata_" + currentTime.Format("2006_01_02_15_04_05")
@@ -17,7 +17,7 @@ func MovedInputFiles(cfg config.Config, log *slog.Logger) []InputFilesT {
 		err := os.Mkdir(folderName, 0755)
 		if err != nil {
 			log.Error("Error if create folder:", err)
-			os.Exit(1)
+			return nil, err
 		}
 	}
 
@@ -34,18 +34,24 @@ func MovedInputFiles(cfg config.Config, log *slog.Logger) []InputFilesT {
 			err := os.Rename(oldPath, newPath)
 			if err != nil {
 				log.Error("Error moving file:", err)
+				return nil, err
 			} else {
-				log.Debug(file.PathFile + " exists and moved successfully")
+				log.Info(file.PathFile + " exists and moved successfully")
 			}
 		} else {
 			log.Error(file.PathFile + " does not exist")
-			os.Exit(1)
+			return nil, err
 		}
 	}
-	return filesName
+	return &MovedInputFilesT{Files: filesName, NewPath: folderName}, nil
 }
 
 type InputFilesT struct {
 	TypeFile string
 	PathFile string
+}
+
+type MovedInputFilesT struct {
+	Files   []InputFilesT
+	NewPath string
 }

@@ -8,6 +8,7 @@ import (
 
 type Operations interface {
 	Create(registrator models.RegistratorsModel) (int64, error)
+	List() (*[]models.RegistratorsModel, error)
 }
 
 type repository struct {
@@ -43,4 +44,14 @@ func (s *repository) Create(registrator models.RegistratorsModel) (int64, error)
 		}
 	}
 	return res.Id, nil
+}
+
+func (s *repository) List() (*[]models.RegistratorsModel, error) {
+	query := `SELECT * FROM registrators`
+	var res []models.RegistratorsModel
+	var err = s.db.Select(&res, query)
+	if err != nil {
+		return nil, err
+	}
+	return &res, nil
 }

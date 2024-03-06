@@ -6,7 +6,9 @@ CREATE TABLE IF NOT EXISTS product_vids (
  name_1c VARCHAR NOT NULL,
  registrator_id BIGINT NOT NULL REFERENCES registrators (id),
  changed_at TIMESTAMPTZ, 
- created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+ created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+
+ CONSTRAINT product_vids_id_1c UNIQUE (id_1c)
 );
 -- +goose StatementEnd
 

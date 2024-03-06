@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS price_vids (
  is_active BOOLEAN NOT NULL DEFAULT FALSE,
  active_change_date TIMESTAMPTZ NOT NULL,
  changed_at TIMESTAMPTZ, 
- created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+ created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 
- CONSTRAINT product_vids_id_1c UNIQUE (id_1c)
+ CONSTRAINT price_vids_id_1c UNIQUE (id_1c)
 );
 -- +goose StatementEnd
 

@@ -8,8 +8,9 @@ import (
 )
 
 type Operations interface {
-	Create(product_group models.ProductsGroup) (int64, error)
-	List() (*[]models.ProductsGroup, error)
+	Create(product_group models.ProductVids) (int64, error)
+	Update(product_group models.ProductVids) (int64, error)
+	List() (*[]models.ProductVids, error)
 }
 
 type repository struct {

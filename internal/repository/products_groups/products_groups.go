@@ -2,6 +2,7 @@ package products_groups
 
 import (
 	"cipo_cite_server/internal/models"
+	"errors"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -45,6 +46,30 @@ func (s *repository) Create(product_group models.ProductsGroup) (int64, error) {
 	return res, nil
 }
 
+func (s *repository) Update(product_group models.ProductsGroup) (int64, error) {
+	if product_group.Id == 0 {
+		return 0, errors.New("id is empty")
+	}
+	query := `UPDATE product_groups
+	SET id_1c = :id_1c, name_1c = :name_1c, registrator_id = :registrator_id, changed_at = CURRENT_TIMESTAMP
+	WHERE id = :id RETURNING id`
+
+	rows, err := s.db.NamedQuery(query, product_group)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+	var res int64
+
+	for rows.Next() {
+		err := rows.Scan(&res)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return res, nil
+}
+
 func (s *repository) List() (*[]models.ProductsGroup, error) {
 	query := `SELECT * FROM product_groups`
 	var res []models.ProductsGroup
@@ -52,15 +77,5 @@ func (s *repository) List() (*[]models.ProductsGroup, error) {
 	if err != nil {
 		return nil, err
 	}
-	// defer rows.Close()
-
-	// for rows.Next() {
-	// 	err := rows.Scan(&res)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	utils.PrintAsJSON(res)
-	// }
-
 	return &res, nil
 }

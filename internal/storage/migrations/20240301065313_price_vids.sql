@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS price_vids (
  active_change_date TIMESTAMPTZ NOT NULL,
  changed_at TIMESTAMPTZ, 
  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+
+ CONSTRAINT product_vids_id_1c UNIQUE (id_1c)
 );
 -- +goose StatementEnd
 

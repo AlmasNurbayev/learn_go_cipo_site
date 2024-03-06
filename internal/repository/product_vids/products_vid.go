@@ -1,4 +1,4 @@
-package vids
+package product_vids
 
 import (
 	"cipo_cite_server/internal/models"
@@ -22,8 +22,8 @@ func NewRepository(db *sqlx.DB) *repository {
 	}
 }
 
-func (s *repository) Create(product_group models.VidsModel) (int64, error) {
-	query := `INSERT INTO vids 
+func (s *repository) Create(product_group models.ProductVids) (int64, error) {
+	query := `INSERT INTO product_vids
 	(id_1c, name_1c, registrator_id) 
 		VALUES 
 		(:id_1c, :name_1c, :registrator_id) 
@@ -41,15 +41,16 @@ func (s *repository) Create(product_group models.VidsModel) (int64, error) {
 		if err != nil {
 			return 0, err
 		}
+		//utils.PrintAsJSON(res)
 	}
 	return res, nil
 }
 
-func (s *repository) Update(product_group models.VidsModel) (int64, error) {
+func (s *repository) Update(product_group models.ProductVids) (int64, error) {
 	if product_group.Id == 0 {
 		return 0, errors.New("id is empty")
 	}
-	query := `UPDATE vids
+	query := `UPDATE product_vids
 	SET id_1c = :id_1c, name_1c = :name_1c, registrator_id = :registrator_id, changed_at = CURRENT_TIMESTAMP
 	WHERE id = :id RETURNING id`
 
@@ -69,9 +70,9 @@ func (s *repository) Update(product_group models.VidsModel) (int64, error) {
 	return res, nil
 }
 
-func (s *repository) List() (*[]models.VidsModel, error) {
-	query := `SELECT * FROM vids`
-	var res []models.VidsModel
+func (s *repository) List() (*[]models.ProductVids, error) {
+	query := `SELECT * FROM product_vids`
+	var res []models.ProductVids
 	var err = s.db.Select(&res, query)
 	if err != nil {
 		return nil, err

@@ -77,6 +77,7 @@ func PrintAsJSON(data interface{}) {
 	fmt.Printf("%s \n", p)
 }
 
+// сохраняем структуру как JSON в файл
 func SaveStructToJSONFile(data interface{}, fileName string, log *slog.Logger) {
 	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
@@ -94,6 +95,7 @@ func SaveStructToJSONFile(data interface{}, fileName string, log *slog.Logger) {
 	log.Debug("Структура успешно сохранена в файл " + fileName)
 }
 
+// тернарный оператор
 func Ternary(condition bool, trueVal, falseVal interface{}) interface{} {
 	if condition {
 		return trueVal

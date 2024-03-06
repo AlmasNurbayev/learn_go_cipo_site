@@ -41,5 +41,6 @@ func RegistratorParser(receiveStruct *XMLTypes.ImportType, filePath string, newP
 	}
 	registratorStruct.Date_schema = time
 	//utils.PrintAsJSON(registratorStruct)
+
 	return &registratorStruct, nil
 }

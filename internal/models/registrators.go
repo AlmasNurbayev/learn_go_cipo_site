@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type RegistratorsModel struct {
 	Id             int64     `json:"id" db:"id"`

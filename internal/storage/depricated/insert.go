@@ -1,13 +1,12 @@
-package operations
+package operations1
 
 import (
+	"cipo_cite_server/internal/storage/postgres"
 	"fmt"
 	"log/slog"
 	"reflect"
 	"slices"
 	"strings"
-
-	"github.com/jmoiron/sqlx"
 )
 
 // вставка в БД, передаем:
@@ -17,7 +16,7 @@ import (
 // 4. data - структура для вставки,
 // 5. skippedFields - поля, которые нужно пропустить при вставке,
 // возвращаем: id новой записи или ошибку
-func Insert(db *sqlx.DB,
+func Insert(dbStore *postgres.PostgresStore,
 	log *slog.Logger,
 	tableName string,
 	data interface{},
@@ -67,7 +66,7 @@ func Insert(db *sqlx.DB,
 	query = query[:len(query)-1] + ") RETURNING id"
 	fmt.Println("query", query)
 
-	rows, err := db.NamedQuery(query, data)
+	rows, err := dbStore.Dbx.NamedQuery(query, data)
 	if err != nil {
 		return 0, err
 	}

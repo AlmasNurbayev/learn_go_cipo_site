@@ -3,6 +3,7 @@ package partParsers
 import (
 	"cipo_cite_server/internal/models"
 	XMLTypes "cipo_cite_server/internal/parser/XMLtypes"
+	"database/sql"
 	"time"
 )
 
@@ -14,9 +15,9 @@ func ProductGroupsParser(receiveStruct *XMLTypes.ImportType, registrator_id int6
 
 	root := mainStruct.КоммерческаяИнформация.Классификатор.Свойства.Свойство
 	// children, ok := findInStructRecursive(root, "ТоварнаяГруппа")
-	// if !ok {
-	// 	return nil, errors.New("not found root nodes for product groups")
-	// }
+	//  if !ok {
+	//  	return nil, errors.New("not found root nodes for product groups")
+	//  }
 
 	for i := 0; i < len(root); i++ {
 		if root[i].Наименование == "ТоварнаяГруппа" {
@@ -26,7 +27,10 @@ func ProductGroupsParser(receiveStruct *XMLTypes.ImportType, registrator_id int6
 					Id_1c:          root[i].ВариантыЗначений.Справочник[j].ИдЗначения,
 					Name_1c:        root[i].ВариантыЗначений.Справочник[j].Значение,
 					Registrator_id: registrator_id,
-					Changed_at:     time.Now(),
+					Changed_at: sql.NullTime{
+						Time:  time.Now(),
+						Valid: true,
+					},
 				}
 				productGroups = append(productGroups, productGroup)
 			}

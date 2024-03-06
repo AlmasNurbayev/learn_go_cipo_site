@@ -3,7 +3,7 @@ package partParsers
 import "reflect"
 
 // рекурсивный поиск значения в структуре - проблема в типизации результата
-func findInStructRecursive(data interface{}, value interface{}) (interface{}, bool) {
+func findInStructRecursive(data interface{}, value interface{}) (any, bool) {
 	val := reflect.ValueOf(data)
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()

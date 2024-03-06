@@ -4,19 +4,17 @@ import (
 	"cipo_cite_server/internal/config"
 	"cipo_cite_server/internal/models"
 	XMLTypes "cipo_cite_server/internal/parser/XMLtypes"
-	"cipo_cite_server/internal/utils"
 	"log/slog"
 	"time"
 )
 
 // ищет в структуре вложенную структуру "Классификатор", "Каталог" и возвращат ее поля
 // а также сведения о загружаемом файле как запись для таблицы БД "Registrators"
-func RegistratorParser(receiveStruct *XMLTypes.ImportType, filePath string, newPath string, log *slog.Logger) (interface{}, error) {
+func RegistratorParser(receiveStruct *XMLTypes.ImportType, filePath string, newPath string, log *slog.Logger) (*models.RegistratorsModel, error) {
 	// parser.Parser()
 	Cfg := config.MustLoad()
 
 	mainStruct := (*receiveStruct)
-	utils.PrintAsJSON(mainStruct.КоммерческаяИнформация.Классификатор.Наименование)
 	var registratorStruct models.RegistratorsModel
 
 	registratorStruct.Name_folder = newPath
@@ -27,6 +25,7 @@ func RegistratorParser(receiveStruct *XMLTypes.ImportType, filePath string, newP
 	registratorStruct.Name_catalog = mainStruct.КоммерческаяИнформация.Каталог.Наименование
 	registratorStruct.Name_class = mainStruct.КоммерческаяИнформация.Классификатор.Наименование
 	registratorStruct.Operation_date = time.Now()
+	registratorStruct.Changed_at = time.Now()
 	registratorStruct.Ver_schema = mainStruct.КоммерческаяИнформация.ВерсияСхемы
 	if mainStruct.КоммерческаяИнформация.Каталог.СодержитТолькоИзменения == "false" {
 		registratorStruct.Is_only_change = false
@@ -41,6 +40,6 @@ func RegistratorParser(receiveStruct *XMLTypes.ImportType, filePath string, newP
 		return nil, err
 	}
 	registratorStruct.Date_schema = time
-	utils.PrintAsJSON(registratorStruct)
-	return registratorStruct, nil
+	//utils.PrintAsJSON(registratorStruct)
+	return &registratorStruct, nil
 }

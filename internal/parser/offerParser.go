@@ -2,10 +2,9 @@ package parser
 
 import (
 	parser "cipo_cite_server/internal/parser/XMLtypes"
-	"log/slog"
 )
 
-func OfferParser(mainStruct *parser.OfferType, log *slog.Logger) {
+func OfferParser(mainStruct *parser.OfferType, p *Parser) {
 	// parser.Parser()
 	//utils.PrintAsJSON((*mainStruct))
 }

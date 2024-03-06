@@ -3,7 +3,6 @@ package postgres
 import (
 	"fmt"
 	"log/slog"
-	"os"
 
 	"cipo_cite_server/internal/config"
 
@@ -14,17 +13,27 @@ import (
 const driverName = "pgx"
 
 type PostgresStore struct {
-	databaseUrl string
-	dbx         *sqlx.DB
+	DatabaseUrl string
+	Dbx         *sqlx.DB
+	Log         *slog.Logger
 }
 
-// func NewStore(databaseUrl string) (*PostgresStore) {
-// 	return &PostgresStore{
-// 			databaseUrl: databaseUrl,
-// 	}
-// }
+//	func NewStore(databaseUrl string) (*PostgresStore) {
+//		return &PostgresStore{
+//				databaseUrl: databaseUrl,
+//		}
+//	}
+func NewStore() *PostgresStore {
+	return &PostgresStore{}
+}
 
-func (s *PostgresStore) New(databaseUrl string) (*sqlx.DB, error) {
+func (s *PostgresStore) Init(env config.Envs, log *slog.Logger) (*PostgresStore, error) {
+	var databaseUrl = fmt.Sprint(
+		"postgresql://",
+		env.DB_USERNAME,
+		":", env.DB_PASSWORD,
+		"@", env.DB_HOST, ":", fmt.Sprint(env.DB_PORT), "/", env.DB_DATABASE)
+
 	dbx, err := sqlx.Open(driverName, databaseUrl)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", "ConnectDB", err)
@@ -33,29 +42,13 @@ func (s *PostgresStore) New(databaseUrl string) (*sqlx.DB, error) {
 	if errPing != nil {
 		return nil, fmt.Errorf("%s: %w", "PingDB", errPing)
 	}
+	log.Info("DB connected: " + env.DB_DATABASE)
 
-	s.dbx = dbx
-	s.databaseUrl = databaseUrl
-	return dbx, nil
+	s.Dbx = dbx
+
+	return s, nil
 }
 
 func (s *PostgresStore) CloseDB() error {
-	return s.dbx.Close()
-}
-
-func InitPostgresStore(env config.Envs, log *slog.Logger) *sqlx.DB {
-	postgresStore := PostgresStore{}
-	var databaseUrl = fmt.Sprint(
-		"postgresql://",
-		env.DB_USERNAME,
-		":", env.DB_PASSWORD,
-		"@", env.DB_HOST, ":", fmt.Sprint(env.DB_PORT), "/", env.DB_DATABASE)
-	dbx, err := postgresStore.New(databaseUrl)
-	dbx.DB.Ping()
-	if err != nil {
-		log.Error("cannot connect to database: " + err.Error())
-		os.Exit(1)
-	}
-	log.Info("DB connected: " + env.DB_DATABASE)
-	return dbx
+	return s.Dbx.Close()
 }

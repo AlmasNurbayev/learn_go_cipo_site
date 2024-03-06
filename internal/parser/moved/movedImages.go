@@ -1,4 +1,4 @@
-package parser
+package moved
 
 import (
 	"cipo_cite_server/internal/utils"

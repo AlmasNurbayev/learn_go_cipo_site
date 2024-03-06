@@ -4,6 +4,7 @@ import (
 	"cipo_cite_server/internal/models"
 	XMLTypes "cipo_cite_server/internal/parser/XMLtypes"
 	"cipo_cite_server/internal/parser/partParsers"
+	"cipo_cite_server/internal/repository/product_desc"
 	"cipo_cite_server/internal/repository/product_vids"
 	"cipo_cite_server/internal/repository/products_groups"
 	"cipo_cite_server/internal/repository/registrators"
@@ -44,6 +45,15 @@ func ImportParser(p *Parser, mainStruct *XMLTypes.ImportType, filePath string, n
 		p.Log.Error("Error parse or saving product_vids:", err)
 		return
 	}
+
+	// получаем из БД доп. реквизиты продуктов
+	productDescRepo := product_desc.NewRepository(P.Sqlx)
+	existsProductDesc, err := productDescRepo.List()
+	if err != nil {
+		p.Log.Error("Error selecting product_desc:", err)
+		return
+	}
+	P.Log.Info("exist product_desc: " + strconv.Itoa(len(*existsProductDesc)))
 
 }
 

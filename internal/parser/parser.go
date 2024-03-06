@@ -81,6 +81,7 @@ func (p *Parser) ReadAndParse(moved *moved.MovedInputFilesT) error {
 			return err
 		}
 		defer file.Close()
+
 		switch fileItem.TypeFile {
 		case "classificator":
 			var temp XMLtypes.ImportType             // создаем экземпляр структуры

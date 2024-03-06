@@ -6,8 +6,8 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type operations interface {
-	CreateRegistrator(registrator models.RegistratorsModel) (int64, error)
+type Operations interface {
+	Create(registrator models.RegistratorsModel) (int64, error)
 }
 
 type repository struct {

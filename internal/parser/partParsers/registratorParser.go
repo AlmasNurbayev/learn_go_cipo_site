@@ -9,7 +9,7 @@ import (
 )
 
 // ищет в структуре вложенную структуру "Классификатор", "Каталог" и возвращат ее поля
-// а также сведения о загружаемом файле как запись для таблицы БД "Registrators"
+// а также сведения о загружаемом файле
 func RegistratorParser(receiveStruct *XMLTypes.ImportType, filePath string, newPath string, log *slog.Logger) (*models.RegistratorsModel, error) {
 	// parser.Parser()
 	Cfg := config.MustLoad()

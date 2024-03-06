@@ -13,6 +13,8 @@ import (
 
 // читаем большую структуру из файла import.xml и записываем в базу
 func ImportParser(p *Parser, mainStruct *XMLTypes.ImportType, filePath string, newPath string) {
+
+	// ищем и записываем регистратор
 	registrator, err := partParsers.RegistratorParser(mainStruct, filePath, newPath, p.Log)
 	if err != nil {
 		p.Log.Error("Error pasrsing registrator:", err)
@@ -24,6 +26,8 @@ func ImportParser(p *Parser, mainStruct *XMLTypes.ImportType, filePath string, n
 		os.Exit(1)
 	}
 	p.Log.Info("added registrator with id: " + strconv.Itoa(int(registrator_id)))
+
+	// ищем и записываем product_groups
 	product_groups := partParsers.ProductGroupsParser(mainStruct, registrator_id)
 	productGroupsRepo := products_groups.NewRepository(p.Sqlx)
 
@@ -33,7 +37,6 @@ func ImportParser(p *Parser, mainStruct *XMLTypes.ImportType, filePath string, n
 		return
 	}
 	p.Log.Info("exist product_groups: " + strconv.Itoa(len(*existsProductGroups)))
-
 	for _, val := range product_groups {
 		isDuplicated := slices.ContainsFunc(*existsProductGroups, func(item models.ProductsGroup) bool {
 			return item.Id_1c == val.Id_1c
@@ -46,5 +49,4 @@ func ImportParser(p *Parser, mainStruct *XMLTypes.ImportType, filePath string, n
 			p.Log.Error("Error inserting product_groups:", err)
 		}
 	}
-
 }

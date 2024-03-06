@@ -5,6 +5,7 @@ import (
 	"cipo_cite_server/internal/logger"
 	"cipo_cite_server/internal/storage"
 	"cipo_cite_server/internal/storage/postgres"
+	"os"
 )
 
 func main() {
@@ -18,14 +19,17 @@ func main() {
 	log.Debug("debug message is enabled")
 
 	// init storage: pgx, sqlx
-	db := postgres.InitPostgresStore(cfg.Envs, log)
+	var postgresStore = postgres.NewStore()
+	postgresStore, err := postgresStore.Init(cfg.Envs, log)
+	if err != nil {
+		log.Error("Error init postgresStore: ", err)
+		os.Exit(1)
+	}
 
-	storage.MigrationsUp(db)
-
-	// init moved files
-	// init parser
+	// make migrations
+	storage.MigrationsUp(postgresStore.Dbx)
 
 	// TODO: graceful shutdown
-	db.Close()
+	postgresStore.Dbx.Close()
 	log.Info("DB shutdown: " + cfg.Envs.DB_DATABASE)
 }

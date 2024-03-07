@@ -1,4 +1,5 @@
 .env
 input/**
+assets/**
 import.json
 offer.json

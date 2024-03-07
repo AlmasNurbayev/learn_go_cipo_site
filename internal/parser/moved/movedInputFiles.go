@@ -24,6 +24,7 @@ func MovedInputFiles(cfg config.Config, log *slog.Logger) (*MovedInputFilesT, er
 	filesName := []InputFilesT{
 		{"classificator", cfg.Parser.Classificator_name},
 		{"offer", cfg.Parser.Offer_name},
+		{"imageFolder", cfg.Parser.ImageFolder_name},
 	}
 
 	for i, file := range filesName {

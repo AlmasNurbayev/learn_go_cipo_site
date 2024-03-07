@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS image_registry (
   id BIGSERIAL PRIMARY KEY,
 
   is_main BOOLEAN NOT NULL DEFAULT FALSE,
-  main_change_at TIMESTAMPTZ NOT NULL, 
   resolution VARCHAR,
   size INT NOT NULL,
   full_name VARCHAR NOT NULL,
@@ -13,7 +12,7 @@ CREATE TABLE IF NOT EXISTS image_registry (
   path VARCHAR NOT NULL,
   operation_date TIMESTAMPTZ NOT NULL,
   is_active BOOLEAN NOT NULL DEFAULT FALSE,
-  active_change_at TIMESTAMPTZ NOT NULL,
+  
   product_id BIGINT NOT NULL REFERENCES products (id) NOT NULL,
   registrator_id BIGINT NOT NULL REFERENCES registrators (id),
 

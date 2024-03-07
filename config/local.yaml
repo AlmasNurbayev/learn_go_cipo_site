@@ -7,6 +7,7 @@ server:
 parser:
   classificator_name: import0_1.xml
   offer_name: offers0_1.xml
+  imageFolder_name: import_files
   default_user_id: 1
 
 

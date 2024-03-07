@@ -61,10 +61,11 @@ type ImportType struct {
 			Товары struct {
 				Text  string `xml:",chardata"`
 				Товар []struct {
-					Text           string `xml:",chardata"`
-					Ид             string `xml:"Ид"`
-					Артикул        string `xml:"Артикул"`
-					Наименование   string `xml:"Наименование"`
+					Text           string   `xml:",chardata"`
+					Ид             string   `xml:"Ид"`
+					Артикул        string   `xml:"Артикул"`
+					Наименование   string   `xml:"Наименование"`
+					Картинка       []string `xml:"Картинка"`
 					БазоваяЕдиница struct {
 						Text                    string `xml:",chardata"`
 						Код                     string `xml:"Код,attr"`

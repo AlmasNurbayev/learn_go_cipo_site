@@ -44,14 +44,14 @@ func (p *Parser) Init() {
 }
 
 func (p *Parser) Run() {
-	// init moved files
-	// result, err := moved.MovedInputFiles(Cfg.Config, p.Log)
+	//init moved files
+	// movedFiles, err := moved.MovedInputFiles(p.Cfg.Config, p.Log)
 	// if err != nil {
-	// 	log.Error("Error moving input files:", err)
+	// 	p.Log.Error("Error moving input files:", err)
 	// 	os.Exit(1)
 	// }
-	// if moved.MovedImages(result.NewPath, p.Log) != nil {
-	// 	log.Error("Error moving images:", err)
+	// if moved.CopyImages("assets", movedFiles.NewPath, p.Log) != nil {
+	// 	p.Log.Error("Error copying images: ", err)
 	// 	os.Exit(1)
 	// }
 	movedFiles := moved.MovedInputFilesT{
@@ -59,7 +59,7 @@ func (p *Parser) Run() {
 			{TypeFile: "classificator", PathFile: "input/import0_1.xml"},
 			{TypeFile: "offer", PathFile: "input/offers0_1.xml"},
 		},
-		NewPath: "newPath",
+		NewPath: "input",
 	}
 	utils.PrintAsJSON(movedFiles)
 
@@ -77,6 +77,7 @@ func (p *Parser) Run() {
 			var temp XMLtypes.ImportType             // создаем экземпляр структуры
 			xmlStruct := temp.КоммерческаяИнформация // создаем подчиненный узел для декодирования
 			decoder := xml.NewDecoder(file)
+			decoder.Strict = false
 			if err := decoder.Decode(&xmlStruct); err != nil {
 				p.Log.Error("Ошибка декодирования XML:", err)
 				os.Exit(1)

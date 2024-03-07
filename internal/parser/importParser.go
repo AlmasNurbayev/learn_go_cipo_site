@@ -4,11 +4,15 @@ import (
 	"cipo_cite_server/internal/models"
 	XMLTypes "cipo_cite_server/internal/parser/XMLtypes"
 	"cipo_cite_server/internal/parser/partParsers"
+	"cipo_cite_server/internal/repository/image_registry"
 	"cipo_cite_server/internal/repository/product_desc"
 	"cipo_cite_server/internal/repository/product_vids"
+	"cipo_cite_server/internal/repository/products"
 	"cipo_cite_server/internal/repository/products_groups"
 	"cipo_cite_server/internal/repository/registrators"
 	"cipo_cite_server/internal/repository/vids"
+	"cipo_cite_server/internal/utils"
+	"fmt"
 	"slices"
 	"strconv"
 )
@@ -55,6 +59,20 @@ func ImportParser(p *Parser, mainStruct *XMLTypes.ImportType, filePath string, n
 	}
 	P.Log.Info("exist product_desc: " + strconv.Itoa(len(*existsProductDesc)))
 
+	// получаем из XML и записываем продукты
+	err = parseAndSaveProducts(mainStruct, registrator_id)
+	if err != nil {
+		p.Log.Error("Error parse or saving products:", err)
+		return
+	}
+
+	// получаем из XML и записываем картинки
+	err = parseAndSaveImages(mainStruct, registrator_id, newPath)
+	if err != nil {
+		p.Log.Error("Error parse or saving images:", err)
+		return
+	}
+
 }
 
 func parseAndSaveRegistrator(mainStruct *XMLTypes.ImportType,
@@ -91,7 +109,7 @@ func parseAndSaveProductGroups(mainStruct *XMLTypes.ImportType,
 			return item.Id_1c == val.Id_1c
 		})
 		if indexDuplicated != -1 {
-			P.Log.Warn("Duplicated and updated product_groups: " + val.Id_1c)
+			P.Log.Debug("Duplicated and updated product_groups: " + val.Id_1c)
 			val.Id = (*existsProductGroups)[indexDuplicated].Id
 			if _, err := productGroupsRepo.Update(val); err != nil {
 				P.Log.Error("Error updating vids:", err)
@@ -125,7 +143,7 @@ func parseAndSaveVids(mainStruct *XMLTypes.ImportType,
 			return item.Id_1c == val.Id_1c
 		})
 		if indexDuplicated != -1 {
-			P.Log.Warn("Duplicated and updated vids: " + val.Id_1c)
+			P.Log.Debug("Duplicated and updated vids: " + val.Id_1c)
 			val.Id = (*existsVids)[indexDuplicated].Id
 			if _, err := vidsRepo.Update(val); err != nil {
 				P.Log.Error("Error updating vids:", err)
@@ -159,7 +177,7 @@ func parseAndSaveProductVids(mainStruct *XMLTypes.ImportType,
 			return item.Id_1c == val.Id_1c
 		})
 		if indexDuplicated != -1 {
-			P.Log.Warn("Duplicated and updated product_vids: " + val.Id_1c)
+			P.Log.Debug("Duplicated and updated product_vids: " + val.Id_1c)
 			val.Id = (*existsProductsVids)[indexDuplicated].Id
 			if _, err := productVidRepo.Update(val); err != nil {
 				P.Log.Error("Error updating product_vids:", err)
@@ -173,5 +191,119 @@ func parseAndSaveProductVids(mainStruct *XMLTypes.ImportType,
 			return err
 		}
 	}
+	return nil
+}
+
+func parseAndSaveProducts(mainStruct *XMLTypes.ImportType, registrator_id int64) error {
+
+	// считываем и передаем все значения таблицы product_group
+	productGroupsRepo := products_groups.NewRepository(P.Sqlx)
+	existsProductGroups, err := productGroupsRepo.List()
+	if err != nil {
+		P.Log.Error("Error selecting product_groups:", err)
+		return err
+	}
+
+	// считываем и передаем все значения таблицы product_vid
+	productVidRepo := product_vids.NewRepository(P.Sqlx)
+	existsProductsVids, err := productVidRepo.List()
+	if err != nil {
+		P.Log.Error("Error selecting product_vids:", err)
+		return err
+	}
+
+	// считываем и передаем все значения таблицы product_desc
+	productDescRepo := product_desc.NewRepository(P.Sqlx)
+	existsProductDesc, err := productDescRepo.List()
+	if err != nil {
+		P.Log.Error("Error selecting product_desc:", err)
+		return err
+	}
+
+	// считываем и передаем все значения таблицы vids
+	vidsRepo := vids.NewRepository(P.Sqlx)
+	existsVids, err := vidsRepo.List()
+	if err != nil {
+		P.Log.Error("Error selecting vids:", err)
+		return err
+	}
+
+	// считываем все уже имющиеся записи в products
+	productsRepo := products.NewRepository(P.Sqlx)
+	existsProducts, err := productsRepo.List()
+	if err != nil {
+		P.Log.Error("Error selecting products: ", err)
+		return err
+	}
+
+	// парсим все продукты из XML
+	NewProducts := partParsers.ProductsParser(mainStruct, registrator_id,
+		*existsProductGroups, *existsProductsVids, *existsProductDesc, *existsVids)
+	fmt.Println("product parsing count: ", len(NewProducts))
+
+	for _, val := range NewProducts {
+		indexDuplicated := slices.IndexFunc(*existsProducts, func(item models.Products) bool {
+			return item.Id_1c == val.Id_1c
+		})
+		if indexDuplicated != -1 {
+			//P.Log.Debug("Duplicated and updated products: " + val.Id_1c)
+			val.Id = (*existsProducts)[indexDuplicated].Id
+			if _, err := productsRepo.Update(val); err != nil {
+				P.Log.Error("Error updating products:", err)
+				return err
+			}
+			continue
+		}
+		if _, err := productsRepo.Create(val); err != nil {
+			//utils.PrintAsJSON(val)
+			P.Log.Error("Error inserting products: ", err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func parseAndSaveImages(mainStruct *XMLTypes.ImportType, registrator_id int64, newPath string) error {
+	productsRepo := products.NewRepository(P.Sqlx)
+	existsProducts, err := productsRepo.List()
+	if err != nil {
+		P.Log.Error("Error selecting products: ", err)
+		return err
+	}
+	NewImages, err := partParsers.ImageParser(mainStruct, registrator_id, *existsProducts, newPath)
+	if err != nil {
+		P.Log.Error("Error parsing images: ", err)
+		return err
+	}
+	fmt.Println("image parsing count: ", len(NewImages))
+
+	// считываем все уже имющиеся записи в products
+	imagesRepo := image_registry.NewRepository(P.Sqlx)
+	existsImages, err := imagesRepo.List()
+	if err != nil {
+		P.Log.Error("Error selecting images: ", err)
+		return err
+	}
+
+	for _, val := range NewImages {
+		indexDuplicated := slices.IndexFunc(*existsImages, func(item models.ImageRegistry) bool {
+			return item.Name == val.Name
+		})
+		if indexDuplicated != -1 {
+			//P.Log.Debug("Duplicated and updated products: " + val.Id_1c)
+			if _, err := imagesRepo.Update(val); err != nil {
+				P.Log.Error("Error updating images:", err)
+				return err
+			}
+			continue
+		}
+		if _, err := imagesRepo.Create(val); err != nil {
+			utils.PrintAsJSON(val)
+			P.Log.Error("Error inserting images: ", err)
+			return err
+		}
+	}
+
 	return nil
 }

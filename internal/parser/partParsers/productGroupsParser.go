@@ -3,7 +3,6 @@ package partParsers
 import (
 	"cipo_cite_server/internal/models"
 	XMLTypes "cipo_cite_server/internal/parser/XMLtypes"
-	"database/sql"
 	"time"
 )
 
@@ -21,16 +20,14 @@ func ProductGroupsParser(receiveStruct *XMLTypes.ImportType, registrator_id int6
 
 	for i := 0; i < len(root); i++ {
 		if root[i].Наименование == "ТоварнаяГруппа" {
+			time := time.Now()
 
 			for j := 0; j < len(root[i].ВариантыЗначений.Справочник); j++ {
 				productGroup := models.ProductsGroup{
 					Id_1c:          root[i].ВариантыЗначений.Справочник[j].ИдЗначения,
 					Name_1c:        root[i].ВариантыЗначений.Справочник[j].Значение,
 					Registrator_id: registrator_id,
-					Changed_at: sql.NullTime{
-						Time:  time.Now(),
-						Valid: true,
-					},
+					Changed_at:     &time,
 				}
 				productGroups = append(productGroups, productGroup)
 			}

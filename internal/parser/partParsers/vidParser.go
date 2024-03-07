@@ -3,15 +3,15 @@ package partParsers
 import (
 	"cipo_cite_server/internal/models"
 	XMLTypes "cipo_cite_server/internal/parser/XMLtypes"
-	"database/sql"
 	"time"
 )
 
-// ищет в структуре вложенную структуру "ТоварнаяГруппа" и возвращат ее элементы
+// ищет в структуре вложенную структуру "Вид товаров" и возвращат ее элементы
 func VidParser(receiveStruct *XMLTypes.ImportType, registrator_id int64) []models.VidsModel {
 
 	mainStruct := (*receiveStruct)
 	var vids []models.VidsModel
+	time := time.Now()
 
 	root := mainStruct.КоммерческаяИнформация.Классификатор.Свойства.Свойство
 
@@ -24,10 +24,7 @@ func VidParser(receiveStruct *XMLTypes.ImportType, registrator_id int64) []model
 					Id_1c:          root[i].ВариантыЗначений.Справочник[j].ИдЗначения,
 					Name_1c:        root[i].ВариантыЗначений.Справочник[j].Значение,
 					Registrator_id: registrator_id,
-					Changed_at: sql.NullTime{
-						Time:  time.Now(),
-						Valid: true,
-					},
+					Changed_at:     &time,
 				}
 				vids = append(vids, vid)
 			}

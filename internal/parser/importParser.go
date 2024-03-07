@@ -20,42 +20,42 @@ import (
 var P *Parser
 
 // читаем большую структуру из файла import.xml и записываем в базу
-func ImportParser(p *Parser, mainStruct *XMLTypes.ImportType, filePath string, newPath string) {
+func ImportParser(p *Parser, mainStruct *XMLTypes.ImportType, filePath string, newPath string) error {
 	P = p
 	// получаем из XML и записываем регистратор
 	registrator_id, err := parseAndSaveRegistrator(mainStruct, filePath, newPath)
 	if err != nil {
 		p.Log.Error("Error parse or saving registrator:", err)
-		return
+		return err
 	}
 
 	// получаем из XML и записываем продуктовые группы
 	err = parseAndSaveProductGroups(mainStruct, registrator_id)
 	if err != nil {
 		p.Log.Error("Error parse or saving product_groups:", err)
-		return
+		return err
 	}
 
 	// получаем из XML и записываем продуктовые виды моделей
 	err = parseAndSaveVids(mainStruct, registrator_id)
 	if err != nil {
 		p.Log.Error("Error parse or saving vids:", err)
-		return
+		return err
 	}
 
 	// получаем из XML и записываем виды продуктов
 	err = parseAndSaveProductVids(mainStruct, registrator_id)
 	if err != nil {
 		p.Log.Error("Error parse or saving product_vids:", err)
-		return
+		return err
 	}
 
 	// получаем из БД доп. реквизиты продуктов
-	productDescRepo := product_desc.NewRepository(P.Sqlx)
+	productDescRepo := product_desc.NewRepository(P.Tx)
 	existsProductDesc, err := productDescRepo.List()
 	if err != nil {
 		p.Log.Error("Error selecting product_desc:", err)
-		return
+		return err
 	}
 	P.Log.Info("exist product_desc: " + strconv.Itoa(len(*existsProductDesc)))
 
@@ -63,16 +63,16 @@ func ImportParser(p *Parser, mainStruct *XMLTypes.ImportType, filePath string, n
 	err = parseAndSaveProducts(mainStruct, registrator_id)
 	if err != nil {
 		p.Log.Error("Error parse or saving products:", err)
-		return
+		return err
 	}
 
 	// получаем из XML и записываем картинки
 	err = parseAndSaveImages(mainStruct, registrator_id, newPath)
 	if err != nil {
 		p.Log.Error("Error parse or saving images:", err)
-		return
+		return err
 	}
-
+	return nil
 }
 
 func parseAndSaveRegistrator(mainStruct *XMLTypes.ImportType,
@@ -82,7 +82,7 @@ func parseAndSaveRegistrator(mainStruct *XMLTypes.ImportType,
 		P.Log.Error("Error pasrsing registrator:", err)
 		return 0, err
 	}
-	registerRepo := registrators.NewRepository(P.Sqlx)
+	registerRepo := registrators.NewRepository(P.Tx)
 	registrator_id, err := registerRepo.Create(*registrator)
 	if err != nil {
 		P.Log.Error("Error inserting registrators:", err)
@@ -95,7 +95,7 @@ func parseAndSaveRegistrator(mainStruct *XMLTypes.ImportType,
 func parseAndSaveProductGroups(mainStruct *XMLTypes.ImportType,
 	registrator_id int64) error {
 	NewProductGroups := partParsers.ProductGroupsParser(mainStruct, registrator_id)
-	productGroupsRepo := products_groups.NewRepository(P.Sqlx)
+	productGroupsRepo := products_groups.NewRepository(P.Tx)
 
 	// берем из базы имеющие записи и проверяем на дубликаты
 	existsProductGroups, err := productGroupsRepo.List()
@@ -131,7 +131,7 @@ func parseAndSaveVids(mainStruct *XMLTypes.ImportType,
 	//utils.PrintAsJSON(NewVids)
 
 	// берем из базы имеющие записи и проверяем на дубликаты
-	vidsRepo := vids.NewRepository(P.Sqlx)
+	vidsRepo := vids.NewRepository(P.Tx)
 	existsVids, err := vidsRepo.List()
 	if err != nil {
 		P.Log.Error("Error selecting vids:", err)
@@ -165,7 +165,7 @@ func parseAndSaveProductVids(mainStruct *XMLTypes.ImportType,
 	//utils.PrintAsJSON(NewVids)
 
 	// берем из базы имеющие записи и проверяем на дубликаты
-	productVidRepo := product_vids.NewRepository(P.Sqlx)
+	productVidRepo := product_vids.NewRepository(P.Tx)
 	existsProductsVids, err := productVidRepo.List()
 	if err != nil {
 		P.Log.Error("Error selecting product_vids:", err)
@@ -197,7 +197,7 @@ func parseAndSaveProductVids(mainStruct *XMLTypes.ImportType,
 func parseAndSaveProducts(mainStruct *XMLTypes.ImportType, registrator_id int64) error {
 
 	// считываем и передаем все значения таблицы product_group
-	productGroupsRepo := products_groups.NewRepository(P.Sqlx)
+	productGroupsRepo := products_groups.NewRepository(P.Tx)
 	existsProductGroups, err := productGroupsRepo.List()
 	if err != nil {
 		P.Log.Error("Error selecting product_groups:", err)
@@ -205,7 +205,7 @@ func parseAndSaveProducts(mainStruct *XMLTypes.ImportType, registrator_id int64)
 	}
 
 	// считываем и передаем все значения таблицы product_vid
-	productVidRepo := product_vids.NewRepository(P.Sqlx)
+	productVidRepo := product_vids.NewRepository(P.Tx)
 	existsProductsVids, err := productVidRepo.List()
 	if err != nil {
 		P.Log.Error("Error selecting product_vids:", err)
@@ -213,7 +213,7 @@ func parseAndSaveProducts(mainStruct *XMLTypes.ImportType, registrator_id int64)
 	}
 
 	// считываем и передаем все значения таблицы product_desc
-	productDescRepo := product_desc.NewRepository(P.Sqlx)
+	productDescRepo := product_desc.NewRepository(P.Tx)
 	existsProductDesc, err := productDescRepo.List()
 	if err != nil {
 		P.Log.Error("Error selecting product_desc:", err)
@@ -221,7 +221,7 @@ func parseAndSaveProducts(mainStruct *XMLTypes.ImportType, registrator_id int64)
 	}
 
 	// считываем и передаем все значения таблицы vids
-	vidsRepo := vids.NewRepository(P.Sqlx)
+	vidsRepo := vids.NewRepository(P.Tx)
 	existsVids, err := vidsRepo.List()
 	if err != nil {
 		P.Log.Error("Error selecting vids:", err)
@@ -229,7 +229,7 @@ func parseAndSaveProducts(mainStruct *XMLTypes.ImportType, registrator_id int64)
 	}
 
 	// считываем все уже имющиеся записи в products
-	productsRepo := products.NewRepository(P.Sqlx)
+	productsRepo := products.NewRepository(P.Tx)
 	existsProducts, err := productsRepo.List()
 	if err != nil {
 		P.Log.Error("Error selecting products: ", err)
@@ -265,7 +265,7 @@ func parseAndSaveProducts(mainStruct *XMLTypes.ImportType, registrator_id int64)
 }
 
 func parseAndSaveImages(mainStruct *XMLTypes.ImportType, registrator_id int64, newPath string) error {
-	productsRepo := products.NewRepository(P.Sqlx)
+	productsRepo := products.NewRepository(P.Tx)
 	existsProducts, err := productsRepo.List()
 	if err != nil {
 		P.Log.Error("Error selecting products: ", err)
@@ -279,7 +279,7 @@ func parseAndSaveImages(mainStruct *XMLTypes.ImportType, registrator_id int64, n
 	fmt.Println("image parsing count: ", len(NewImages))
 
 	// считываем все уже имющиеся записи в products
-	imagesRepo := image_registry.NewRepository(P.Sqlx)
+	imagesRepo := image_registry.NewRepository(P.Tx)
 	existsImages, err := imagesRepo.List()
 	if err != nil {
 		P.Log.Error("Error selecting images: ", err)

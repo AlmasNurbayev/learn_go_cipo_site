@@ -14,10 +14,10 @@ type Operations interface {
 }
 
 type repository struct {
-	db *sqlx.DB
+	db *sqlx.Tx
 }
 
-func NewRepository(db *sqlx.DB) *repository {
+func NewRepository(db *sqlx.Tx) *repository {
 	return &repository{
 		db: db,
 	}

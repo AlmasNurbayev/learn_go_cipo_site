@@ -12,17 +12,17 @@ type Operations interface {
 }
 
 type repository struct {
-	db *sqlx.DB
+	db *sqlx.Tx
 }
 
-func NewRepository(db *sqlx.DB) *repository {
+func NewRepository(db *sqlx.Tx) *repository {
 	return &repository{
 		db: db,
 	}
 }
 
 func (s *repository) Create(registrator models.RegistratorsModel) (int64, error) {
-	query := `INSERT INTO registrators 
+	query := `INSERT INTO registrators
 	(operation_date,name_folder,name_file,user_id,date_schema,
 		id_catalog,id_class,name_catalog,name_class,ver_schema,is_only_change,changed_at) 
 		VALUES 

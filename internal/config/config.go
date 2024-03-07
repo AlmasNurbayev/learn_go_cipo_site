@@ -44,7 +44,12 @@ func MustLoad() *MultiConfig {
 	var envs Envs
 
 	//
-	godotenv.Load(".env")
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Printf("cannot load env: %s", err)
+		os.Exit(1)
+	}
+
 	errEnv := cleanenv.ReadEnv(&envs)
 	if errEnv != nil {
 		log.Printf("cannot read env: %s", errEnv)

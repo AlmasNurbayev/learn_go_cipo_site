@@ -18,6 +18,7 @@ type Parser struct {
 	Version string
 	Cfg     *config.MultiConfig
 	Sqlx    *sqlx.DB
+	Tx      *sqlx.Tx
 	Log     *slog.Logger
 }
 
@@ -38,9 +39,10 @@ func (p *Parser) Init() {
 	postgresStore, err := postgresStore.Init(p.Cfg.Envs, p.Log)
 	if err != nil {
 		p.Log.Error("Error init postgresStore:", err)
-		os.Exit(1)
+		panic(err)
 	}
 	p.Sqlx = postgresStore.Dbx
+	p.Tx = postgresStore.Tx
 }
 
 func (p *Parser) Run() {
@@ -80,17 +82,23 @@ func (p *Parser) Run() {
 			decoder.Strict = false
 			if err := decoder.Decode(&xmlStruct); err != nil {
 				p.Log.Error("Ошибка декодирования XML:", err)
-				os.Exit(1)
+				panic(err)
 			}
 			// передаем полный тип, чтобы не выделять подчиненный узел в парсере
-			ImportParser(p, &XMLtypes.ImportType{КоммерческаяИнформация: xmlStruct}, fileItem.PathFile, movedFiles.NewPath)
+			err := ImportParser(p, &XMLtypes.ImportType{КоммерческаяИнформация: xmlStruct}, fileItem.PathFile, movedFiles.NewPath)
+			if err != nil {
+				p.Log.Error("Error import:", err)
+				p.Tx.Rollback()
+				p.Sqlx.Close()
+				panic(err)
+			}
 		case "offer":
 			var temp XMLtypes.OfferType
 			xmlStruct := temp.КоммерческаяИнформация
 			decoder := xml.NewDecoder(file)
 			if err := decoder.Decode(&xmlStruct); err != nil {
 				p.Log.Error("Ошибка декодирования XML:", err)
-				os.Exit(1)
+				panic(err)
 			}
 			// передаем полный тип, чтобы не выделять подчиненный узел в парсере
 			OfferParser(&XMLtypes.OfferType{КоммерческаяИнформация: xmlStruct}, p)
@@ -98,6 +106,8 @@ func (p *Parser) Run() {
 	}
 
 	// TODO: graceful shutdown
+	p.Tx.Commit()
 	p.Sqlx.Close()
+
 	p.Log.Info("DB shutdown: " + p.Cfg.Envs.DB_DATABASE)
 }

@@ -15,6 +15,7 @@ const driverName = "pgx"
 type PostgresStore struct {
 	DatabaseUrl string
 	Dbx         *sqlx.DB
+	Tx          *sqlx.Tx
 	Log         *slog.Logger
 }
 
@@ -42,9 +43,13 @@ func (s *PostgresStore) Init(env config.Envs, log *slog.Logger) (*PostgresStore,
 	if errPing != nil {
 		return nil, fmt.Errorf("%s: %w", "PingDB", errPing)
 	}
-	log.Info("DB connected: " + env.DB_DATABASE)
-
+	tx, err := dbx.Beginx()
+	if err != nil {
+		return nil, err
+	}
 	s.Dbx = dbx
+	s.Tx = tx
+	log.Info("DB connected: " + env.DB_DATABASE)
 
 	return s, nil
 }

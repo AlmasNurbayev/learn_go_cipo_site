@@ -88,7 +88,10 @@ func (p *Parser) Run() {
 			err := ImportParser(p, &XMLtypes.ImportType{КоммерческаяИнформация: xmlStruct}, fileItem.PathFile, movedFiles.NewPath)
 			if err != nil {
 				p.Log.Error("Error import and rollback all db changes:", err)
-				p.Tx.Rollback()
+				err = p.Tx.Rollback()
+				if err != nil {
+					p.Log.Error("Error rollback all db changes:", err)
+				}
 				p.Sqlx.Close()
 				panic(err)
 			}
@@ -104,7 +107,10 @@ func (p *Parser) Run() {
 			err := OfferParser(p, &XMLtypes.OfferType{КоммерческаяИнформация: xmlStruct}, fileItem.PathFile, movedFiles.NewPath)
 			if err != nil {
 				p.Log.Error("Error offer and rollback all db changes:", err)
-				p.Tx.Rollback()
+				err = p.Tx.Rollback()
+				if err != nil {
+					p.Log.Error("Error rollback all db changes:", err)
+				}
 				p.Sqlx.Close()
 				panic(err)
 			}
@@ -112,7 +118,10 @@ func (p *Parser) Run() {
 	}
 
 	// TODO: graceful shutdown
-	p.Tx.Commit()
+	err := p.Tx.Commit()
+	if err != nil {
+		p.Log.Error("Error commit all db changes:", err)
+	}
 	p.Sqlx.Close()
 
 	p.Log.Info("DB shutdown: " + p.Cfg.Envs.DB_DATABASE)

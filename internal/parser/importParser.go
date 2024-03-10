@@ -22,6 +22,8 @@ var P *Parser
 // читаем большую структуру из файла import.xml и записываем в базу
 func ImportParser(p *Parser, mainStruct *XMLTypes.ImportType, filePath string, newPath string) error {
 	P = p
+	p.Log.Info("Starting import parsing")
+
 	// получаем из XML и записываем регистратор
 	registrator_id, err := parseAndSaveRegistrator(mainStruct, filePath, newPath)
 	if err != nil {
@@ -77,7 +79,7 @@ func ImportParser(p *Parser, mainStruct *XMLTypes.ImportType, filePath string, n
 
 func parseAndSaveRegistrator(mainStruct *XMLTypes.ImportType,
 	filePath string, newPath string) (int64, error) {
-	registrator, err := partParsers.RegistratorParser(mainStruct, filePath, newPath, P.Log)
+	registrator, err := partParsers.RegistratorParserFromImport(mainStruct, filePath, newPath, P.Log)
 	if err != nil {
 		P.Log.Error("Error pasrsing registrator:", err)
 		return 0, err
@@ -239,7 +241,8 @@ func parseAndSaveProducts(mainStruct *XMLTypes.ImportType, registrator_id int64)
 	// парсим все продукты из XML
 	NewProducts := partParsers.ProductsParser(mainStruct, registrator_id,
 		*existsProductGroups, *existsProductsVids, *existsProductDesc, *existsVids)
-	fmt.Println("product parsing count: ", len(NewProducts))
+	fmt.Println("products parsing count: ", len(NewProducts))
+	fmt.Println("products exists count: ", len(*existsProducts))
 
 	for _, val := range NewProducts {
 		indexDuplicated := slices.IndexFunc(*existsProducts, func(item models.Products) bool {
@@ -285,6 +288,8 @@ func parseAndSaveImages(mainStruct *XMLTypes.ImportType, registrator_id int64, n
 		P.Log.Error("Error selecting images: ", err)
 		return err
 	}
+
+	fmt.Println("image exists count: ", len(*existsImages))
 
 	for _, val := range NewImages {
 		indexDuplicated := slices.IndexFunc(*existsImages, func(item models.ImageRegistry) bool {

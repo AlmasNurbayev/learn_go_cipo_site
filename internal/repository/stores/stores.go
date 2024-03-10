@@ -1,4 +1,4 @@
-package vids
+package stores
 
 import (
 	"cipo_cite_server/internal/models"
@@ -23,8 +23,10 @@ func NewRepository(db *sqlx.Tx) *repository {
 	}
 }
 
-func (s *repository) Create(product_group models.VidsModel) (int64, error) {
-	query := `INSERT INTO vids 
+func (s *repository) Create(product_group models.Stores) (int64, error) {
+
+	// записываем только часть полей - остальные для правки вручную
+	query := `INSERT INTO stores 
 	(id_1c, name_1c, registrator_id) 
 		VALUES 
 		(:id_1c, :name_1c, :registrator_id) 
@@ -46,11 +48,13 @@ func (s *repository) Create(product_group models.VidsModel) (int64, error) {
 	return res, nil
 }
 
-func (s *repository) Update(product_group models.VidsModel) (int64, error) {
+func (s *repository) Update(product_group models.Stores) (int64, error) {
 	if product_group.Id == 0 {
 		return 0, errors.New("id is empty")
 	}
-	query := `UPDATE vids
+
+	// записываем только часть полей - остальные для правки вручную
+	query := `UPDATE stores
 	SET id_1c = :id_1c, name_1c = :name_1c, registrator_id = :registrator_id, changed_at = CURRENT_TIMESTAMP
 	WHERE id = :id RETURNING id`
 
@@ -70,9 +74,9 @@ func (s *repository) Update(product_group models.VidsModel) (int64, error) {
 	return res, nil
 }
 
-func (s *repository) List() (*[]models.VidsModel, error) {
-	query := `SELECT * FROM vids`
-	var res []models.VidsModel
+func (s *repository) List() (*[]models.Stores, error) {
+	query := `SELECT * FROM stores`
+	var res []models.Stores
 	var err = s.db.Select(&res, query)
 	if err != nil {
 		return nil, err

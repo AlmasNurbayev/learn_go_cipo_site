@@ -69,7 +69,7 @@ type OfferType struct {
 			} `xml:"ТипыЦен"`
 			Склады struct {
 				Text  string `xml:",chardata"`
-				Склад struct {
+				Склад []struct {
 					Text         string `xml:",chardata"`
 					Ид           string `xml:"Ид"`
 					Наименование string `xml:"Наименование"`
@@ -103,7 +103,7 @@ type OfferType struct {
 					} `xml:"БазоваяЕдиница"`
 					ЗначенияСвойств struct {
 						Text             string `xml:",chardata"`
-						ЗначенияСвойства struct {
+						ЗначенияСвойства []struct {
 							Text         string `xml:",chardata"`
 							Ид           string `xml:"Ид"`
 							Наименование string `xml:"Наименование"`
@@ -131,7 +131,7 @@ type OfferType struct {
 						} `xml:"Цена"`
 					} `xml:"Цены"`
 					Количество float32 `xml:"Количество"`
-					Склад      struct {
+					Склад      []struct {
 						Text               string  `xml:",chardata"`
 						ИдСклада           string  `xml:"ИдСклада,attr"`
 						КоличествоНаСкладе float32 `xml:"КоличествоНаСкладе,attr"`

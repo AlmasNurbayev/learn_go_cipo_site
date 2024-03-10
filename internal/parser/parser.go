@@ -87,7 +87,7 @@ func (p *Parser) Run() {
 			// передаем полный тип, чтобы не выделять подчиненный узел в парсере
 			err := ImportParser(p, &XMLtypes.ImportType{КоммерческаяИнформация: xmlStruct}, fileItem.PathFile, movedFiles.NewPath)
 			if err != nil {
-				p.Log.Error("Error import:", err)
+				p.Log.Error("Error import and rollback all db changes:", err)
 				p.Tx.Rollback()
 				p.Sqlx.Close()
 				panic(err)
@@ -101,7 +101,13 @@ func (p *Parser) Run() {
 				panic(err)
 			}
 			// передаем полный тип, чтобы не выделять подчиненный узел в парсере
-			OfferParser(&XMLtypes.OfferType{КоммерческаяИнформация: xmlStruct}, p)
+			err := OfferParser(p, &XMLtypes.OfferType{КоммерческаяИнформация: xmlStruct}, fileItem.PathFile, movedFiles.NewPath)
+			if err != nil {
+				p.Log.Error("Error offer and rollback all db changes:", err)
+				p.Tx.Rollback()
+				p.Sqlx.Close()
+				panic(err)
+			}
 		}
 	}
 

@@ -2,6 +2,7 @@ package registrators
 
 import (
 	"cipo_cite_server/internal/models"
+	"strconv"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -48,6 +49,16 @@ func (s *repository) Create(registrator models.RegistratorsModel) (int64, error)
 
 func (s *repository) List() (*[]models.RegistratorsModel, error) {
 	query := `SELECT * FROM registrators`
+	var res []models.RegistratorsModel
+	var err = s.db.Select(&res, query)
+	if err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (s *repository) GetById(id int64) (*[]models.RegistratorsModel, error) {
+	query := `SELECT * FROM registrators WHERE id = ` + strconv.Itoa(int(id))
 	var res []models.RegistratorsModel
 	var err = s.db.Select(&res, query)
 	if err != nil {

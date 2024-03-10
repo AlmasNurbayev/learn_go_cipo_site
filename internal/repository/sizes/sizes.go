@@ -1,4 +1,4 @@
-package vids
+package sizes
 
 import (
 	"cipo_cite_server/internal/models"
@@ -8,9 +8,9 @@ import (
 )
 
 type Operations interface {
-	Create(product_group models.ProductsGroup) (int64, error)
-	Update(product_group models.ProductsGroup) (int64, error)
-	List() (*[]models.ProductsGroup, error)
+	Create(size models.Sizes) (int64, error)
+	Update(size models.Sizes) (int64, error)
+	List() (*[]models.Sizes, error)
 }
 
 type repository struct {
@@ -23,14 +23,14 @@ func NewRepository(db *sqlx.Tx) *repository {
 	}
 }
 
-func (s *repository) Create(product_group models.VidsModel) (int64, error) {
-	query := `INSERT INTO vids 
+func (s *repository) Create(size models.Sizes) (int64, error) {
+	query := `INSERT INTO sizes 
 	(id_1c, name_1c, registrator_id) 
 		VALUES 
 		(:id_1c, :name_1c, :registrator_id) 
 		RETURNING id`
 
-	rows, err := s.db.NamedQuery(query, product_group)
+	rows, err := s.db.NamedQuery(query, size)
 	if err != nil {
 		return 0, err
 	}
@@ -46,15 +46,15 @@ func (s *repository) Create(product_group models.VidsModel) (int64, error) {
 	return res, nil
 }
 
-func (s *repository) Update(product_group models.VidsModel) (int64, error) {
-	if product_group.Id == 0 {
+func (s *repository) Update(size models.Sizes) (int64, error) {
+	if size.Id == 0 {
 		return 0, errors.New("id is empty")
 	}
-	query := `UPDATE vids
+	query := `UPDATE sizes
 	SET id_1c = :id_1c, name_1c = :name_1c, registrator_id = :registrator_id, changed_at = CURRENT_TIMESTAMP
 	WHERE id = :id RETURNING id`
 
-	rows, err := s.db.NamedQuery(query, product_group)
+	rows, err := s.db.NamedQuery(query, size)
 	if err != nil {
 		return 0, err
 	}
@@ -70,9 +70,9 @@ func (s *repository) Update(product_group models.VidsModel) (int64, error) {
 	return res, nil
 }
 
-func (s *repository) List() (*[]models.VidsModel, error) {
-	query := `SELECT * FROM vids`
-	var res []models.VidsModel
+func (s *repository) List() (*[]models.Sizes, error) {
+	query := `SELECT * FROM sizes`
+	var res []models.Sizes
 	var err = s.db.Select(&res, query)
 	if err != nil {
 		return nil, err

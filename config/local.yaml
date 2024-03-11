@@ -3,8 +3,8 @@ server:
   addr: localhost
   http_port: 8085
   ssl_port: 8086
-  timeout: 4
-  idle_timeout: 60
+  timeout: 4s
+  idle_timeout: 60s
 parser:
   classificator_name: import0_1.xml
   offer_name: offers0_1.xml

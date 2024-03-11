@@ -8,23 +8,36 @@ import (
 )
 
 type Operations interface {
-	Create(product_group models.ProductsGroup) (int64, error)
-	Update(product_group models.ProductsGroup) (int64, error)
-	List() (*[]models.ProductsGroup, error)
+	Create(store models.Stores) (int64, error)
+	Update(store models.Stores) (int64, error)
+	List() (*[]models.Stores, error)
 }
 
+// для транзакций
 type repository struct {
 	db *sqlx.Tx
 }
 
+// без транзакций
+type repositoryDb struct {
+	db *sqlx.DB
+}
+
+// для транзакций
 func NewRepository(db *sqlx.Tx) *repository {
 	return &repository{
 		db: db,
 	}
 }
 
-func (s *repository) Create(product_group models.Stores) (int64, error) {
+// без транзакций
+func NewRepositoryDb(db *sqlx.DB) *repositoryDb {
+	return &repositoryDb{
+		db: db,
+	}
+}
 
+func (s *repository) Create(store models.Stores) (int64, error) {
 	// записываем только часть полей - остальные для правки вручную
 	query := `INSERT INTO stores 
 	(id_1c, name_1c, registrator_id) 
@@ -32,7 +45,7 @@ func (s *repository) Create(product_group models.Stores) (int64, error) {
 		(:id_1c, :name_1c, :registrator_id) 
 		RETURNING id`
 
-	rows, err := s.db.NamedQuery(query, product_group)
+	rows, err := s.db.NamedQuery(query, store)
 	if err != nil {
 		return 0, err
 	}
@@ -48,8 +61,8 @@ func (s *repository) Create(product_group models.Stores) (int64, error) {
 	return res, nil
 }
 
-func (s *repository) Update(product_group models.Stores) (int64, error) {
-	if product_group.Id == 0 {
+func (s *repository) Update(store models.Stores) (int64, error) {
+	if store.Id == 0 {
 		return 0, errors.New("id is empty")
 	}
 
@@ -58,7 +71,7 @@ func (s *repository) Update(product_group models.Stores) (int64, error) {
 	SET id_1c = :id_1c, name_1c = :name_1c, registrator_id = :registrator_id, changed_at = CURRENT_TIMESTAMP
 	WHERE id = :id RETURNING id`
 
-	rows, err := s.db.NamedQuery(query, product_group)
+	rows, err := s.db.NamedQuery(query, store)
 	if err != nil {
 		return 0, err
 	}
@@ -74,7 +87,19 @@ func (s *repository) Update(product_group models.Stores) (int64, error) {
 	return res, nil
 }
 
+// для транзакции
 func (s *repository) List() (*[]models.Stores, error) {
+	query := `SELECT * FROM stores`
+	var res []models.Stores
+	var err = s.db.Select(&res, query)
+	if err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+// без транзакции
+func (s *repositoryDb) List() (*[]models.Stores, error) {
 	query := `SELECT * FROM stores`
 	var res []models.Stores
 	var err = s.db.Select(&res, query)

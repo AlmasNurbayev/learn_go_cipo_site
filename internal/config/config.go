@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
@@ -20,11 +21,11 @@ type Envs struct {
 type Config struct {
 	Env    string `yaml:"env" env-required:"true"`
 	Server struct {
-		Addr         string `yaml:"addr" env-required:"true"`
-		Http_port    int    `yaml:"http_port" env-required:"true"`
-		Ssl_port     int    `yaml:"ssl_port" env-required:"true"`
-		Timeout      int    `yaml:"timeout" env-required:"true"`
-		Idle_timeout int    `yaml:"idle_timeout" env-required:"true"`
+		Addr         string        `yaml:"addr" env-required:"true"`
+		Http_port    int           `yaml:"http_port" env-required:"true"`
+		Ssl_port     int           `yaml:"ssl_port" env-required:"true"`
+		Timeout      time.Duration `yaml:"timeout" env-required:"true"`
+		Idle_timeout time.Duration `yaml:"idle_timeout" env-required:"true"`
 	} `yaml:"server"`
 	Parser struct {
 		Classificator_name string `yaml:"classificator_name" env-required:"true"`

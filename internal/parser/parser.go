@@ -47,22 +47,22 @@ func (p *Parser) Init() {
 
 func (p *Parser) Run() {
 	//init moved files
-	// movedFiles, err := moved.MovedInputFiles(p.Cfg.Config, p.Log)
-	// if err != nil {
-	// 	p.Log.Error("Error moving input files:", err)
-	// 	os.Exit(1)
-	// }
-	// if moved.CopyImages("assets", movedFiles.NewPath, p.Log) != nil {
-	// 	p.Log.Error("Error copying images: ", err)
-	// 	os.Exit(1)
-	// }
-	movedFiles := moved.MovedInputFilesT{
-		Files: []moved.InputFilesT{
-			{TypeFile: "classificator", PathFile: "input/import0_1.xml"},
-			{TypeFile: "offer", PathFile: "input/offers0_1.xml"},
-		},
-		NewPath: "input",
+	movedFiles, err := moved.MovedInputFiles(p.Cfg.Config, p.Log)
+	if err != nil {
+		p.Log.Error("Error moving input files:", err)
+		os.Exit(1)
 	}
+	if moved.CopyImages("assets", movedFiles.NewPath, p.Log) != nil {
+		p.Log.Error("Error copying images: ", err)
+		os.Exit(1)
+	}
+	// movedFiles := moved.MovedInputFilesT{
+	// 	Files: []moved.InputFilesT{
+	// 		{TypeFile: "classificator", PathFile: "input/import0_1.xml"},
+	// 		{TypeFile: "offer", PathFile: "input/offers0_1.xml"},
+	// 	},
+	// 	NewPath: "input",
+	// }
 	utils.PrintAsJSON(movedFiles)
 
 	// init parser
@@ -118,7 +118,7 @@ func (p *Parser) Run() {
 	}
 
 	// TODO: graceful shutdown
-	err := p.Tx.Commit()
+	err = p.Tx.Commit()
 	if err != nil {
 		p.Log.Error("Error commit all db changes:", err)
 	}

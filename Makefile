@@ -11,6 +11,9 @@ run_parser:
 run_migrate:
 	go run cmd/${MIGRATE_NAME}/main.go
 
+run_server:
+	go run cmd/${SERVER_NAME}/main.go
+
 clean:
 	go clean
 	rm ${MIGRATE_NAME}

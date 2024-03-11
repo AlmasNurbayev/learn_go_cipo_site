@@ -1,9 +1,10 @@
 env: 'dev'
 server:
+  addr: localhost
   http_port: 8085
   ssl_port: 8086
-  timeout: 4s
-  idle_timeout: 60s
+  timeout: 4
+  idle_timeout: 60
 parser:
   classificator_name: import0_1.xml
   offer_name: offers0_1.xml

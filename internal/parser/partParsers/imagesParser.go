@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"time"
 )
 
@@ -40,11 +41,11 @@ func ImageParser(receiveStruct *XMLTypes.ImportType,
 		root_images := root[productIndex].Картинка
 		for imageIndex := 0; imageIndex < len(root_images); imageIndex++ {
 			// TODO - for moved
-			//full_name := strings.Replace(root_images[imageIndex], "import_files", "product_images", -1)
-			full_name := root_images[imageIndex]
+			full_name := strings.Replace(root_images[imageIndex], "import_files", "product_images", -1)
+			//full_name := root_images[imageIndex]
 			// TODO - for moved
-			//fileInfo, err := os.Stat("assets/" + full_name)
-			fileInfo, err := os.Stat(newPath + "/" + full_name)
+			fileInfo, err := os.Stat("assets/" + full_name)
+			//fileInfo, err := os.Stat(newPath + "/" + full_name)
 			if err != nil {
 				return nil, errors.New("Error getting file information: " + err.Error())
 			}

@@ -120,7 +120,8 @@ func (s *RepositoryDb) GetByIdOrName(input map[string]interface{}, lastRegistrat
 
 	// делаем несколько запросов для получения остальных данных
 	Image_registry := []models.ImageRegistry{}
-	Image_query := `SELECT * FROM image_registry WHERE product_id = ` + strconv.Itoa(int(product_id))
+	Image_query := `SELECT * FROM image_registry WHERE product_id = ` + strconv.Itoa(int(product_id)) + `
+	ORDER BY id ASC`
 	err = s.db.Select(&Image_registry, Image_query)
 	if err != nil {
 		return nil, err
@@ -132,7 +133,8 @@ func (s *RepositoryDb) GetByIdOrName(input map[string]interface{}, lastRegistrat
 	 WHERE 
 	 product_id = ` + strconv.Itoa(int(product_id)) + ` AND 
 	  registrator_id = ` + strconv.Itoa(int(lastRegistrator)) + `
-		GROUP BY sum, qnt, store_id, size_id, size_name_1c`
+		GROUP BY sum, qnt, store_id, size_id, size_name_1c
+		ORDER BY size_name_1c ASC`
 	rows, err := s.db.Queryx(qnt_price_query)
 	if err != nil {
 		return nil, err

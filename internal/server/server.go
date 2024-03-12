@@ -65,6 +65,7 @@ func (s *Server) Init() {
 	s.registerNews()
 	s.registerStores()
 	s.registerProductsFilters()
+	s.registerProduct()
 
 }
 

@@ -52,7 +52,7 @@ func NewsGetID(w http.ResponseWriter, r *http.Request, repo *news.RepositoryDb, 
 		http.Error(w, "not found id", http.StatusBadRequest)
 		return
 	}
-	valueJSON, err := json.Marshal(value)
+	valueJSON, err := json.Marshal((*value)[0]) // возвращаем не массив, а сам объект
 	if err != nil {
 		log.Error("error on NewsGetById: ", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)

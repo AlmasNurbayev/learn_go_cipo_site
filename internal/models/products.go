@@ -31,3 +31,20 @@ type Products struct {
 	Changed_at *time.Time `json:"changed_at" db:"changed_at"`
 	Created_at time.Time  `json:"created_at" db:"created_at"`
 }
+
+type QntPriceRegistryGroup struct {
+	Size_id      int64   `json:"size_id"`
+	Size_name_1c string  `json:"size_name_1c"`
+	Qnt          float32 `json:"qnt"`
+	Sum          float32 `json:"sum"`
+	Store_id     []int64 `json:"store_id"`
+}
+
+type ProductOutput struct {
+	Products
+	Product_group            ProductsGroupShort      `json:"product_group"`
+	Vid_modeli               VidsShort               `json:"vid_modeli" db:"vid_modeli"`
+	Image_registry           []ImageRegistryShort    `json:"image_registry" db:"image_registry"`
+	Qnt_price_registry       []QntPriceRegistry      `json:"qnt_price_registry"`
+	Qnt_price_registry_group []QntPriceRegistryGroup `json:"qnt_price_registry_group"`
+}

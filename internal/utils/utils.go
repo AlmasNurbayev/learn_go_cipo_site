@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"cipo_cite_server/internal/utils/filter"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -11,6 +12,7 @@ import (
 // Добавляем в строку SQL-запроса переданные параметры
 // Пример: передали "SELECT * FROM STORE" и map[string]interface{}{"id": 19, "name_1c": "name"}
 // получили "SELECT * FROM STORE WHERE id = 19 AND name_1c = 'name'"
+// есди есть поле Base - то идет проверка на наличие пагинации через DisablePaging
 func WhereAddParams(selectQuery string, params map[string]interface{}) string {
 	if len(params) > 0 {
 		selectQuery = selectQuery + " WHERE "
@@ -20,6 +22,18 @@ func WhereAddParams(selectQuery string, params map[string]interface{}) string {
 		if value == nil {
 			continue
 		}
+		if key == "Base" {
+			thisBase, ok := params[key].(filter.Filter)
+			if ok {
+				if thisBase.DisablePaging {
+					continue
+				}
+			} else {
+				continue
+			}
+
+		}
+
 		count = count + 1
 		if count > 1 {
 			selectQuery = selectQuery + " AND "

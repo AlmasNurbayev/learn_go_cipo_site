@@ -56,6 +56,7 @@ func GetAll(w http.ResponseWriter, r *http.Request, log *slog.Logger,
 
 	outputJSON, err := json.Marshal(output)
 	if err != nil {
+		log.Error("Error ProductFilters marshal JSON")
 		http.Error(w, "Error ProductFilters marshal JSON", http.StatusInternalServerError)
 		return
 	}

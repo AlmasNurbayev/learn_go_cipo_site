@@ -2,6 +2,7 @@ package qnt_price_registry
 
 import (
 	"cipo_cite_server/internal/models"
+	"errors"
 	"strconv"
 
 	"github.com/jmoiron/sqlx"
@@ -19,6 +20,18 @@ type repository struct {
 
 func NewRepository(db *sqlx.Tx) *repository {
 	return &repository{
+		db: db,
+	}
+}
+
+// без транзакций
+type RepositoryDb struct {
+	db *sqlx.DB
+}
+
+// без транзакций
+func NewRepositoryDb(db *sqlx.DB) *RepositoryDb {
+	return &RepositoryDb{
 		db: db,
 	}
 }
@@ -70,4 +83,26 @@ func (s *repository) GetByRegistratorId(id int64) (*[]models.QntPriceRegistry, e
 		return nil, err
 	}
 	return &res, nil
+}
+
+func (s *RepositoryDb) GetLastRegistratorsFromQntPrices() (int64, error) {
+	query := `SELECT qnt, registrator_id 
+	FROM qnt_price_registry 
+	ORDER BY registrator_id desc
+	limit 10`
+
+	type Result struct {
+		Qnt            float32 `json:"qnt" db:"qnt"`
+		Registrator_id int64   `json:"registrator_id" db:"registrator_id"`
+	}
+	var resSlice []Result
+	var err = s.db.Select(&resSlice, query)
+	if err != nil {
+		return 0, err
+	}
+	if len(resSlice) == 0 {
+		return 0, errors.New("not found registrator")
+	}
+
+	return resSlice[0].Registrator_id, nil
 }

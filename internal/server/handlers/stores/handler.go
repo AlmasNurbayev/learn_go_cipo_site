@@ -17,6 +17,7 @@ func StoresGetAll(w http.ResponseWriter, r *http.Request, repo *stores.Repositor
 	}
 	valueJSON, err := json.Marshal(value)
 	if err != nil {
+		log.Error("Error StoresGetAll marshal JSON")
 		http.Error(w, "Error StoresGetAll marshal JSON", http.StatusInternalServerError)
 		return
 	}

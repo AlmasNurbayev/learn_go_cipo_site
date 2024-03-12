@@ -42,9 +42,9 @@ type QntPriceRegistryGroup struct {
 
 type ProductOutput struct {
 	Products
-	Product_group            ProductsGroupShort      `json:"product_group"`
-	Vid_modeli               VidsShort               `json:"vid_modeli" db:"vid_modeli"`
-	Image_registry           []ImageRegistryShort    `json:"image_registry" db:"image_registry"`
-	Qnt_price_registry       []QntPriceRegistry      `json:"qnt_price_registry"`
+	Product_group  ProductsGroupShort `json:"product_group"`
+	Vid_modeli     VidsShort          `json:"vid_modeli" db:"vid_modeli"`
+	Image_registry []ImageRegistry    `json:"image_registry" db:"image_registry"`
+	//Qnt_price_registry       []QntPriceRegistry      `json:"qnt_price_registry"`
 	Qnt_price_registry_group []QntPriceRegistryGroup `json:"qnt_price_registry_group"`
 }

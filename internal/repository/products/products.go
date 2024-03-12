@@ -5,6 +5,7 @@ import (
 	"cipo_cite_server/internal/utils"
 	"encoding/json"
 	"errors"
+	"strconv"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -100,92 +101,90 @@ func (s *repository) List() (*[]models.Products, error) {
 }
 
 func (s *RepositoryDb) GetByIdOrName(input map[string]interface{}, lastRegistrator int64) (*models.ProductOutput, error) {
-	query := `SELECT products.*,
-	json_agg(json_build_object('id', i.id, 'path', i.path,
-	'full_name',i.full_name, 'is_main', i.is_main, 'is_active', i.is_active, 'product_id', i.product_id,
-	'name', i.name)) image_registry,
-	json_agg(jsonb_build_object(
-	'sum', q.sum, 'qnt', q.qnt, 'store_id', q.store_id, 'size_id', q.size_id,
-	'size_name_1c', q.size_name_1c)) qnt_price_registry_group,
-	jsonb_build_object('id', pg.id,'name_1c', pg.name_1c) product_group,
-	jsonb_build_object('id', vm.id,'name_1c', vm.name_1c) vid_modeli
-	FROM products
-	JOIN image_registry i ON i.product_id = products.id
-	JOIN (select sum, sum(qnt) as qnt, json_agg(store_id) AS store_id, size_id, size_name_1c, product_id 
-		FROM qnt_price_registry 
-		GROUP BY sum, qnt, store_id, size_id, size_name_1c, product_id) q ON q.product_id = products.id 
-	JOIN product_groups pg ON pg.id = products.product_group_id
-	JOIN vids vm ON vm.id = products.product_group_id`
-	query = utils.WhereAddParams(query, input)
 
-	query += ` group by products.id, pg.id, vm.id`
+	productsTotal := []models.ProductOutput{}
 
-	//utils.PrintAsJSON(query)
-	resSlice := []models.ProductOutput{}
+	query_products := `SELECT products.* FROM products`
+	query_products = utils.WhereAddParams(query_products, input)
 
-	var rows, err = s.db.Queryx(query)
+	err := s.db.Select(&productsTotal, query_products)
+	if err != nil {
+		return nil, err
+	}
+	if len(productsTotal) != 1 {
+		return nil, errors.New("products len is not 1")
+	}
+	product_id := productsTotal[0].Id
+	product_group_id := productsTotal[0].Product_group_id
+	vid_id := productsTotal[0].Vid_id
+
+	// делаем несколько запросов для получения остальных данных
+	Image_registry := []models.ImageRegistry{}
+	Image_query := `SELECT * FROM image_registry WHERE product_id = ` + strconv.Itoa(int(product_id))
+	err = s.db.Select(&Image_registry, Image_query)
 	if err != nil {
 		return nil, err
 	}
 
-	defer rows.Close()
+	qnt_price_registry := []models.QntPriceRegistryGroup{}
+	qnt_price_query := `SELECT sum, sum(qnt) as qnt, TO_JSON(ARRAY_REMOVE(ARRAY_AGG(store_id), NULL)) as store_id, size_id, size_name_1c
+	 FROM qnt_price_registry
+	 WHERE 
+	 product_id = ` + strconv.Itoa(int(product_id)) + ` AND 
+	  registrator_id = ` + strconv.Itoa(int(lastRegistrator)) + `
+		GROUP BY sum, qnt, store_id, size_id, size_name_1c`
+	rows, err := s.db.Queryx(qnt_price_query)
+	if err != nil {
+		return nil, err
+	}
 	for rows.Next() {
+		var qnt_price_registry_item models.QntPriceRegistryGroup
 
-		// SQLX не умеет сканировать поля json/jsonb, которое является массивом []uint8
-		// поэтому необходимо сканировать каждое поле и там где json делать Unmarshal
-		// и присваивать декодированный результат нужному полю
+		// сканируем из-за получения массива
+		var storesBytes []byte
+		var storesArray []int64
 
-		var res models.ProductOutput
-		var imageBytes []byte
-		var imageStruct []models.ImageRegistryShort
-		var qntPriceBytes []byte
-		var qntPriceGroupStruct []models.QntPriceRegistryGroup
-		var productGroupBytes []byte
-		var productGroupStruct models.ProductsGroupShort
-		var vidModeliBytes []byte
-		var vidModeliStruct models.VidsShort
-
-		err := rows.Scan(&res.Id, &res.Id_1c, &res.Name, &res.Name_1c, &res.Product_group_id,
-			&res.Product_vid_id, &res.Registrator_id, &res.Brand_id, &res.Country_id, &res.Vid_id,
-			&res.Artikul, &res.Base_ed, &res.Description, &res.Material_inside, &res.Material_podoshva,
-			&res.Material_up, &res.Sex, &res.Product_folder, &res.Main_color, &res.Is_public_web,
-			&res.Changed_at, &res.Created_at, &imageBytes, &qntPriceBytes,
-			&productGroupBytes, &vidModeliBytes,
-		)
-		//err := rows.StructScan(&res)
+		err = rows.Scan(&qnt_price_registry_item.Sum, &qnt_price_registry_item.Qnt,
+			&storesBytes, &qnt_price_registry_item.Size_id, &qnt_price_registry_item.Size_name_1c)
 		if err != nil {
 			return nil, err
 		}
-
-		err = json.Unmarshal(imageBytes, &imageStruct)
+		err = json.Unmarshal(storesBytes, &storesArray)
 		if err != nil {
 			return nil, err
 		}
-		res.Image_registry = imageStruct
-
-		err = json.Unmarshal(qntPriceBytes, &qntPriceGroupStruct)
 		if err != nil {
 			return nil, err
 		}
-		res.Qnt_price_registry_group = qntPriceGroupStruct
+		qnt_price_registry_item.Store_id = storesArray
 
-		err = json.Unmarshal(productGroupBytes, &productGroupStruct)
-		if err != nil {
-			return nil, err
-		}
-		res.Product_group = productGroupStruct
-
-		err = json.Unmarshal(vidModeliBytes, &vidModeliStruct)
-		if err != nil {
-			return nil, err
-		}
-		res.Vid_modeli = vidModeliStruct
-
-		resSlice = append(resSlice, res)
+		qnt_price_registry = append(qnt_price_registry, qnt_price_registry_item)
 	}
 
-	if len(resSlice) != 1 {
-		return nil, errors.New("slice len is not 1")
+	product_group := []models.ProductsGroupShort{}
+	product_query := `SELECT id, name_1c FROM product_groups WHERE id = ` + strconv.Itoa(int(product_group_id))
+	err = s.db.Select(&product_group, product_query)
+	if err != nil {
+		return nil, err
 	}
-	return &resSlice[0], nil
+	if len(product_group) != 1 {
+		return nil, errors.New("product_group len is not 1")
+	}
+
+	vid := []models.VidsShort{}
+	vid_query := `SELECT id, name_1c FROM vids WHERE id = ` + strconv.Itoa(int(*vid_id))
+	err = s.db.Select(&vid, vid_query)
+	if err != nil {
+		return nil, err
+	}
+	if len(vid) != 1 {
+		return nil, errors.New("vid len is not 1")
+	}
+
+	productsTotal[0].Image_registry = Image_registry
+	productsTotal[0].Product_group = product_group[0]
+	productsTotal[0].Vid_modeli = vid[0]
+	productsTotal[0].Qnt_price_registry_group = qnt_price_registry
+
+	return &productsTotal[0], nil
 }

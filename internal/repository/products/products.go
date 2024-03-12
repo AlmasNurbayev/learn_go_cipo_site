@@ -153,9 +153,6 @@ func (s *RepositoryDb) GetByIdOrName(input map[string]interface{}, lastRegistrat
 		if err != nil {
 			return nil, err
 		}
-		if err != nil {
-			return nil, err
-		}
 		qnt_price_registry_item.Store_id = storesArray
 
 		qnt_price_registry = append(qnt_price_registry, qnt_price_registry_item)

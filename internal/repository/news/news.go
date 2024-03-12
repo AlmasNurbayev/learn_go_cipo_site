@@ -38,3 +38,16 @@ func (s *RepositoryDb) List(filter *newsFilter.Filter) (*[]models.News, error) {
 	}
 	return &res, nil
 }
+
+func (s *RepositoryDb) ListById(id int64) (*[]models.News, error) {
+	//utils.PrintAsJSON(filter)
+	query := "SELECT * FROM news WHERE id = " + fmt.Sprint(id)
+	fmt.Println(query)
+
+	var res []models.News
+	var err = s.db.Select(&res, query)
+	if err != nil {
+		return nil, err
+	}
+	return &res, nil
+}

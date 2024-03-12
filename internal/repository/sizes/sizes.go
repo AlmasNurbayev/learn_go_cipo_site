@@ -23,6 +23,18 @@ func NewRepository(db *sqlx.Tx) *repository {
 	}
 }
 
+// без транзакций
+type RepositoryDb struct {
+	db *sqlx.DB
+}
+
+// без транзакций
+func NewRepositoryDb(db *sqlx.DB) *RepositoryDb {
+	return &RepositoryDb{
+		db: db,
+	}
+}
+
 func (s *repository) Create(size models.Sizes) (int64, error) {
 	query := `INSERT INTO sizes 
 	(id_1c, name_1c, registrator_id) 
@@ -73,6 +85,17 @@ func (s *repository) Update(size models.Sizes) (int64, error) {
 func (s *repository) List() (*[]models.Sizes, error) {
 	query := `SELECT * FROM sizes`
 	var res []models.Sizes
+	var err = s.db.Select(&res, query)
+	if err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+// без транзакций
+func (s *RepositoryDb) ListShort() (*[]models.SizesShort, error) {
+	query := `SELECT id, name_1c FROM sizes`
+	var res []models.SizesShort
 	var err = s.db.Select(&res, query)
 	if err != nil {
 		return nil, err

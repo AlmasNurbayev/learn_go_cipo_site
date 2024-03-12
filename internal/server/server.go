@@ -63,6 +63,8 @@ func (s *Server) Init() {
 	s.Mux.Use(middleware.Recoverer)
 	s.Mux.Use(middleware.Heartbeat("/ping"))
 	s.registerNews()
+	s.registerStores()
+	s.registerProductsFilters()
 
 }
 

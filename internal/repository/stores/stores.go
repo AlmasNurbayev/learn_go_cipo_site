@@ -14,30 +14,30 @@ type Operations interface {
 }
 
 // для транзакций
-type repository struct {
+type Repository struct {
 	db *sqlx.Tx
 }
 
 // без транзакций
-type repositoryDb struct {
+type RepositoryDb struct {
 	db *sqlx.DB
 }
 
 // для транзакций
-func NewRepository(db *sqlx.Tx) *repository {
-	return &repository{
+func NewRepository(db *sqlx.Tx) *Repository {
+	return &Repository{
 		db: db,
 	}
 }
 
 // без транзакций
-func NewRepositoryDb(db *sqlx.DB) *repositoryDb {
-	return &repositoryDb{
+func NewRepositoryDb(db *sqlx.DB) *RepositoryDb {
+	return &RepositoryDb{
 		db: db,
 	}
 }
 
-func (s *repository) Create(store models.Stores) (int64, error) {
+func (s *Repository) Create(store models.Stores) (int64, error) {
 	// записываем только часть полей - остальные для правки вручную
 	query := `INSERT INTO stores 
 	(id_1c, name_1c, registrator_id) 
@@ -61,7 +61,7 @@ func (s *repository) Create(store models.Stores) (int64, error) {
 	return res, nil
 }
 
-func (s *repository) Update(store models.Stores) (int64, error) {
+func (s *Repository) Update(store models.Stores) (int64, error) {
 	if store.Id == 0 {
 		return 0, errors.New("id is empty")
 	}
@@ -87,8 +87,7 @@ func (s *repository) Update(store models.Stores) (int64, error) {
 	return res, nil
 }
 
-// для транзакции
-func (s *repository) List() (*[]models.Stores, error) {
+func (s *Repository) List() (*[]models.Stores, error) {
 	query := `SELECT * FROM stores`
 	var res []models.Stores
 	var err = s.db.Select(&res, query)
@@ -98,10 +97,20 @@ func (s *repository) List() (*[]models.Stores, error) {
 	return &res, nil
 }
 
-// без транзакции
-func (s *repositoryDb) List() (*[]models.Stores, error) {
-	query := `SELECT * FROM stores`
+// без транзакций
+func (s *RepositoryDb) List() (*[]models.Stores, error) {
+	query := `SELECT * FROM stores WHERE is_public = true`
 	var res []models.Stores
+	var err = s.db.Select(&res, query)
+	if err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (s *RepositoryDb) ListShort() (*[]models.StoresShort, error) {
+	query := `SELECT id, name_1c FROM stores WHERE is_public = true`
+	var res []models.StoresShort
 	var err = s.db.Select(&res, query)
 	if err != nil {
 		return nil, err

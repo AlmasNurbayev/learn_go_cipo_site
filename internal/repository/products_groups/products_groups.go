@@ -23,6 +23,18 @@ func NewRepository(db *sqlx.Tx) *repository {
 	}
 }
 
+// без транзакций
+type RepositoryDb struct {
+	db *sqlx.DB
+}
+
+// без транзакций
+func NewRepositoryDb(db *sqlx.DB) *RepositoryDb {
+	return &RepositoryDb{
+		db: db,
+	}
+}
+
 func (s *repository) Create(product_group models.ProductsGroup) (int64, error) {
 	query := `INSERT INTO product_groups 
 	(id_1c, name_1c, registrator_id) 
@@ -74,6 +86,17 @@ func (s *repository) Update(product_group models.ProductsGroup) (int64, error) {
 func (s *repository) List() (*[]models.ProductsGroup, error) {
 	query := `SELECT * FROM product_groups`
 	var res []models.ProductsGroup
+	var err = s.db.Select(&res, query)
+	if err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+// без транзакций
+func (s *RepositoryDb) ListShort() (*[]models.ProductsGroupShort, error) {
+	query := `SELECT id, name_1c FROM product_groups`
+	var res []models.ProductsGroupShort
 	var err = s.db.Select(&res, query)
 	if err != nil {
 		return nil, err

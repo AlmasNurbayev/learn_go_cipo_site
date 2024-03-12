@@ -9,12 +9,6 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type Operations interface {
-	Create(product models.Products) (int64, error)
-	Update(product models.Products) (int64, error)
-	List() (*[]models.Products, error)
-}
-
 type repository struct {
 	db *sqlx.Tx
 }
@@ -126,7 +120,7 @@ func (s *RepositoryDb) GetByIdOrName(input map[string]interface{}, lastRegistrat
 
 	query += ` group by products.id, pg.id, vm.id`
 
-	utils.PrintAsJSON(query)
+	//utils.PrintAsJSON(query)
 	resSlice := []models.ProductOutput{}
 
 	var rows, err = s.db.Queryx(query)
@@ -136,6 +130,11 @@ func (s *RepositoryDb) GetByIdOrName(input map[string]interface{}, lastRegistrat
 
 	defer rows.Close()
 	for rows.Next() {
+
+		// SQLX не умеет сканировать поля json/jsonb, которое является массивом []uint8
+		// поэтому необходимо сканировать каждое поле и там где json делать Unmarshal
+		// и присваивать декодированный результат нужному полю
+
 		var res models.ProductOutput
 		var imageBytes []byte
 		var imageStruct []models.ImageRegistryShort
@@ -185,7 +184,8 @@ func (s *RepositoryDb) GetByIdOrName(input map[string]interface{}, lastRegistrat
 		resSlice = append(resSlice, res)
 	}
 
-	utils.PrintAsJSON(resSlice)
-
+	if len(resSlice) != 1 {
+		return nil, errors.New("slice len is not 1")
+	}
 	return &resSlice[0], nil
 }

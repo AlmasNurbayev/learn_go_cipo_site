@@ -4,7 +4,6 @@ import (
 	"cipo_cite_server/internal/repository/products"
 	"cipo_cite_server/internal/repository/qnt_price_registry"
 	"cipo_cite_server/internal/server/handlers/product/productFilter"
-	"cipo_cite_server/internal/utils"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -23,7 +22,7 @@ func GetById(w http.ResponseWriter, r *http.Request, log *slog.Logger,
 		http.Error(w, "not correct filters", http.StatusBadRequest)
 		return
 	}
-	utils.PrintAsJSON(filters)
+	//utils.PrintAsJSON(filters)
 
 	if params.Get("id") == "" && params.Get("name_1c") == "" {
 		http.Error(w, "not content id or name_1c", http.StatusBadRequest)

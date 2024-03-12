@@ -7,10 +7,10 @@ import (
 )
 
 // ищет в структуре вложенную структуру "Вид товаров" и возвращат ее элементы
-func VidParser(receiveStruct *XMLTypes.ImportType, registrator_id int64) []models.VidsModel {
+func VidParser(receiveStruct *XMLTypes.ImportType, registrator_id int64) []models.Vids {
 
 	mainStruct := (*receiveStruct)
-	var vids []models.VidsModel
+	var vids []models.Vids
 	time := time.Now()
 
 	root := mainStruct.КоммерческаяИнформация.Классификатор.Свойства.Свойство
@@ -20,7 +20,7 @@ func VidParser(receiveStruct *XMLTypes.ImportType, registrator_id int64) []model
 
 			for j := 0; j < len(root[i].ВариантыЗначений.Справочник); j++ {
 				//var vid T
-				vid := models.VidsModel{
+				vid := models.Vids{
 					Id_1c:          root[i].ВариантыЗначений.Справочник[j].ИдЗначения,
 					Name_1c:        root[i].ВариантыЗначений.Справочник[j].Значение,
 					Registrator_id: registrator_id,

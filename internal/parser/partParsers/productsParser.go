@@ -15,7 +15,7 @@ func ProductsParser(
 	existsProductGroups []models.ProductsGroup,
 	existsProductsVids []models.ProductVids,
 	existsProductDesc []models.ProductsDesc,
-	existsVid []models.VidsModel,
+	existsVid []models.Vids,
 ) []models.Products {
 
 	mainStruct := (*receiveStruct)
@@ -108,7 +108,7 @@ func ProductsParser(
 					}
 					if val.Field == "vids" {
 						// в справочнике Product_desc ищем какое id_1c имеет свойство "Виды"
-						vid_index := slices.IndexFunc(existsVid, func(item models.VidsModel) bool {
+						vid_index := slices.IndexFunc(existsVid, func(item models.Vids) bool {
 							return item.Id_1c == root_svoistv[k].Значение
 						})
 						if vid_index != -1 {

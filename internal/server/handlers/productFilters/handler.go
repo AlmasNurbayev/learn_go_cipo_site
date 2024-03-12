@@ -62,5 +62,10 @@ func GetAll(w http.ResponseWriter, r *http.Request, log *slog.Logger,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(outputJSON)
+	_, err = w.Write(outputJSON)
+	if err != nil {
+		log.Error("Error ProductFilters write JSON")
+		http.Error(w, "Error ProductFilters write JSON", http.StatusInternalServerError)
+		return
+	}
 }

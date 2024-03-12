@@ -26,7 +26,12 @@ func NewsGetAll(w http.ResponseWriter, r *http.Request, repo *news.RepositoryDb,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(valueJSON)
+	_, err = w.Write(valueJSON)
+	if err != nil {
+		log.Error("Error NewsGetAll write JSON")
+		http.Error(w, "Error NewsGetAll write JSON", http.StatusInternalServerError)
+		return
+	}
 }
 
 func NewsGetID(w http.ResponseWriter, r *http.Request, repo *news.RepositoryDb, log *slog.Logger) {
@@ -60,5 +65,10 @@ func NewsGetID(w http.ResponseWriter, r *http.Request, repo *news.RepositoryDb, 
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(valueJSON)
+	_, err = w.Write(valueJSON)
+	if err != nil {
+		log.Error("Error NewsGetById write JSON")
+		http.Error(w, "Error NewsGetById write JSON", http.StatusInternalServerError)
+		return
+	}
 }

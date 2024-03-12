@@ -23,5 +23,10 @@ func StoresGetAll(w http.ResponseWriter, r *http.Request, repo *stores.Repositor
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(valueJSON)
+	_, err = w.Write(valueJSON)
+	if err != nil {
+		log.Error("Error StoresGetAll write JSON")
+		http.Error(w, "Error StoresGetAll write JSON", http.StatusInternalServerError)
+		return
+	}
 }

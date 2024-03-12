@@ -141,7 +141,7 @@ func parseAndSaveVids(mainStruct *XMLTypes.ImportType,
 	}
 	P.Log.Info("exist vids: " + strconv.Itoa(len(*existsVids)))
 	for _, val := range NewVids {
-		indexDuplicated := slices.IndexFunc(*existsVids, func(item models.VidsModel) bool {
+		indexDuplicated := slices.IndexFunc(*existsVids, func(item models.Vids) bool {
 			return item.Id_1c == val.Id_1c
 		})
 		if indexDuplicated != -1 {

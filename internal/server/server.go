@@ -91,7 +91,10 @@ func (s *Server) Run() {
 }
 
 func (s *Server) Shutdown(ctx context.Context) {
-	s.HttpServer.Shutdown(ctx)
+	err := s.HttpServer.Shutdown(ctx)
+	if err != nil {
+		s.Log.Error("server shutdown error: " + err.Error())
+	}
 	s.Log.Info("server shutdown: " + s.Cfg.Envs.DB_DATABASE)
 	s.Sqlx.Close()
 	s.Log.Info("DB shutdown: " + s.Cfg.Envs.DB_DATABASE)

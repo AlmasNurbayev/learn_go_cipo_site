@@ -273,7 +273,6 @@ func (s *RepositoryDb) List(filters productFilter.FilterListT, lastRegistrator i
 		orderString = "ORDER BY " + orderString
 	}
 
-	fmt.Println(filters.Filters["Size"])
 	if filters.Filters["size"] != nil {
 		whereString = whereString + " AND q2.size_id = ANY (:size) "
 	}
@@ -283,31 +282,34 @@ func (s *RepositoryDb) List(filters productFilter.FilterListT, lastRegistrator i
 	if filters.Filters["search_name"] != nil {
 		whereString = whereString + " AND p.name ILIKE :search_name "
 	}
+	if filters.Filters["vid_modeli"] != nil {
+		whereString = whereString + " AND p.vid_id = ANY (:vid_modeli) "
+	}
 
 	query := `SELECT q2.sum, pg.name_1c as product_group_name, v.name_1c as vid_modeli_name, p.id, p.name, p.artikul, p.description, 
-	p.material_podoshva, p.material_up, p.material_inside, p. sex, p.created_at as product_create_at ,
-	to_json(array_agg(q2)) as qnt_price,
-	to_json(images.agg) as image_registry
-	FROM qnt_price_registry q
-	join lateral (select array_agg( store_id) as store_id, size_id, sum, qnt, size_name_1c from qnt_price_registry 
-	where id = q.id group by store_id, sum, qnt, id, size_id ) as q2 on true 
+		p.material_podoshva, p.material_up, p.material_inside, p.sex, p.created_at as product_create_at ,
+		to_json(array_agg(q2)) as qnt_price,
+		to_json(images.agg) as image_registry
+		FROM qnt_price_registry q
+		join lateral (select array_agg( store_id) as store_id, size_id, sum, qnt, size_name_1c from qnt_price_registry 
+		where id = q.id group by store_id, sum, qnt, id, size_id ) as q2 on true 
 	join products p on p.id = product_id
 	join product_groups pg on p.product_group_id = pg.id
 	join vids v on p.vid_id = v.id
 	join lateral (select (array_agg( jsonb_build_object('name', image_registry.name, 'full_name', full_name, 'is_active', is_active, 'is_main', is_main))) 
-	as agg from image_registry where image_registry.product_id = p.id) as images on true
+		as agg from image_registry where image_registry.product_id = p.id) as images on true
 	WHERE q.registrator_id = ` + strconv.Itoa(int(lastRegistrator)) + whereString + ` AND q.qnt > 0
 	GROUP by p.name, p.id, images.agg, pg.name_1c, v.name_1c, q2.sum
 	 ` + orderString
 	queryWithFilters := query +
 		` limit ` + strconv.Itoa(filters.Base.Take) + ` offset ` + strconv.Itoa(filters.Base.Skip)
 
-	fmt.Println(queryWithFilters)
-	utils.PrintAsJSON(filters)
+	//fmt.Println(queryWithFilters)
+	//utils.PrintAsJSON(filters)
 
 	rows, err := s.db.NamedQuery(queryWithFilters, filters.Filters)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("query data " + err.Error())
 	}
 	for rows.Next() {
 		var productNews_item models.ProductOnceForList
@@ -359,10 +361,30 @@ func (s *RepositoryDb) List(filters productFilter.FilterListT, lastRegistrator i
 		productList = append(productList, productNews_item)
 
 	}
-	utils.PrintAsJSON(filters)
+	//utils.PrintAsJSON(filters)
+	queryCount := `SELECT COUNT(*)
+	FROM qnt_price_registry q
+	join lateral (select array_agg( store_id) as store_id, size_id, sum, qnt, size_name_1c from qnt_price_registry 
+	where id = q.id group by store_id, sum, qnt, id, size_id ) as q2 on true 
+	join products p on p.id = product_id
+	join product_groups pg on p.product_group_id = pg.id
+	join vids v on p.vid_id = v.id
+	join lateral (select (array_agg( jsonb_build_object('name', image_registry.name, 'full_name', full_name, 'is_active', is_active, 'is_main', is_main))) 
+		as agg from image_registry where image_registry.product_id = p.id) as images on true
+	WHERE q.registrator_id = ` + strconv.Itoa(int(lastRegistrator)) + whereString + ` AND q.qnt > 0
+	GROUP by p.name, p.id, images.agg, pg.name_1c, v.name_1c, q2.sum`
+	var fullCount int
+	rows, err = s.db.NamedQuery(queryCount, filters.Filters)
+	if err != nil {
+		fmt.Println(queryCount)
+		return nil, errors.New("query count " + err.Error())
+	}
+	for rows.Next() {
+		fullCount++
+	}
 
 	return &models.ProductsList{
 		Data:          productList,
-		Full_count:    0,
+		Full_count:    fullCount,
 		Current_count: len(productList)}, nil
 }

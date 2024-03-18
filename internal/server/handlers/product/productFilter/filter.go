@@ -56,7 +56,7 @@ func FiltersList(queries url.Values) (*FilterListT, error) {
 			return nil, err
 		}
 		if len(vidRes) > 0 {
-			res.Filters["Vid_modeli"] = &vidRes
+			res.Filters["vid_modeli"] = &vidRes
 		}
 	}
 

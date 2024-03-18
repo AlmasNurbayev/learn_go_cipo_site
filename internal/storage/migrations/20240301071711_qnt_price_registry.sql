@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS qnt_price_registry (
 
   size_name_1c VARCHAR,
   product_name VARCHAR NOT NULL,
-  product_created_at TIMESTAMPTZ,
+  product_created_at TIMESTAMPTZ NOT NULL,
 
   changed_at TIMESTAMPTZ, 
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP

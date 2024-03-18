@@ -47,7 +47,16 @@ func (s *Server) registerProduct() {
 	qntPriceRepo := qnt_price_registry.NewRepositoryDb(s.Sqlx)
 	productRepo := products.NewRepositoryDb(s.Sqlx)
 
+	s.Mux.Get("/productNews", func(w http.ResponseWriter, r *http.Request) {
+		productHandler.ProductNews(w, r, s.Log, qntPriceRepo, productRepo)
+	})
+
 	s.Mux.Get("/product", func(w http.ResponseWriter, r *http.Request) {
 		productHandler.GetById(w, r, s.Log, qntPriceRepo, productRepo)
 	})
+
+	s.Mux.Get("/products", func(w http.ResponseWriter, r *http.Request) {
+		productHandler.List(w, r, s.Log, qntPriceRepo, productRepo)
+	})
+
 }

@@ -11,7 +11,7 @@ const (
 	paginationDefaultSize = 30
 
 	queryParamPage          = "page"
-	queryParamLimit         = "limit"
+	queryParamLimit         = "take"
 	queryParamSkip          = "skip"
 	queryParamDisablePaging = "disable_paging"
 	queryParamSort          = "sort"
@@ -20,7 +20,7 @@ const (
 type Filter struct {
 	Page          int
 	Skip          int
-	Limit         int
+	Take          int
 	DisablePaging bool
 
 	Sort   map[string]string
@@ -61,7 +61,7 @@ func New(queries url.Values) *Filter {
 	return &Filter{
 		Page:          page,
 		Skip:          skip,
-		Limit:         limit,
+		Take:          limit,
 		DisablePaging: disablePaging,
 		Sort:          sortKey,
 	}

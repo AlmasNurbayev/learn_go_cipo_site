@@ -2,10 +2,15 @@ package products
 
 import (
 	"cipo_cite_server/internal/models"
+	"cipo_cite_server/internal/server/handlers/product/productFilter"
 	"cipo_cite_server/internal/utils"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"math"
+	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -186,4 +191,178 @@ func (s *RepositoryDb) GetByIdOrName(input map[string]interface{}, lastRegistrat
 	productsTotal[0].Qnt_price_registry_group = qnt_price_registry
 
 	return &productsTotal[0], nil
+}
+
+func (s *RepositoryDb) GetProductNews(count int, lastRegistrator int64) (*[]models.ProductNews, error) {
+	productsNews := []models.ProductNews{}
+	query := `
+	SELECT pg.name_1c as product_group_name, v.name_1c as vid_modeli_name, p.id, p.name, p.artikul, p.description, 
+p.material_podoshva, p.material_up, p.material_inside, p. sex, p.created_at as product_create_at ,
+to_json(array_agg(q2)) as qnt_price,
+to_json(images.agg) as image_registry
+FROM qnt_price_registry q
+join lateral (select array_agg( store_id) as store_id, size_id, sum, qnt, size_name_1c from qnt_price_registry 
+where id = q.id group by store_id, sum, qnt, id, size_id ) as q2 on true 
+join products p on p.id = product_id
+join product_groups pg on p.product_group_id = pg.id
+join vids v on p.vid_id = v.id
+join lateral (select (array_agg( jsonb_build_object('name', image_registry.name, 'full_name', full_name, 'is_active', is_active, 'is_main', is_main))) 
+as agg from image_registry where image_registry.product_id = p.id) as images on true
+where q.registrator_id = ` + strconv.Itoa(int(lastRegistrator)) + ` and q.qnt > 0
+GROUP by p.name, p.id, images.agg, pg.name_1c, v.name_1c
+order by product_create_at desc
+limit ` + strconv.Itoa(count)
+
+	rows, err := s.db.Queryx(query)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var productNews_item models.ProductNews
+
+		// сканируем из-за получения массива
+		var imagesBytes []byte
+		var imagesArray []models.ImageRegistryShort
+
+		var qntBytes []byte
+		var qntArray []models.QntPriceRegistryGroup
+
+		err = rows.Scan(&productNews_item.Product_group_name, &productNews_item.Vid_modeli_name,
+			&productNews_item.Id, &productNews_item.Name, &productNews_item.Artikul, &productNews_item.Description,
+			&productNews_item.Material_podoshva, &productNews_item.Material_up, &productNews_item.Material_inside,
+			&productNews_item.Sex, &productNews_item.Product_create_at, &qntBytes, &imagesBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal(imagesBytes, &imagesArray)
+		if err != nil {
+			return nil, err
+		}
+		productNews_item.Image_registry = imagesArray
+
+		err = json.Unmarshal(qntBytes, &qntArray)
+		if err != nil {
+			return nil, err
+		}
+		productNews_item.Qnt_price = qntArray
+
+		if len(productNews_item.Image_registry) > 0 {
+			indexMain := slices.IndexFunc(productNews_item.Image_registry, func(i models.ImageRegistryShort) bool {
+				return i.Is_main
+			})
+			if indexMain != -1 {
+				productNews_item.Image_active_path = &productNews_item.Image_registry[indexMain].Full_name
+			}
+		}
+
+		productsNews = append(productsNews, productNews_item)
+
+	}
+	return &productsNews, nil
+}
+
+func (s *RepositoryDb) List(filters productFilter.FilterListT, lastRegistrator int64) (*models.ProductsList, error) {
+	productList := []models.ProductOnceForList{}
+
+	var orderString, whereString string
+	for key, value := range filters.Base.Sort {
+		orderString = key + " " + value
+	}
+	if orderString != "" {
+		orderString = "ORDER BY " + orderString
+	}
+
+	fmt.Println(filters.Filters["Size"])
+	if filters.Filters["size"] != nil {
+		whereString = whereString + " AND q2.size_id = ANY (:size) "
+	}
+	if filters.Filters["product_group"] != nil {
+		whereString = whereString + " AND pg.id = ANY (:product_group) "
+	}
+	if filters.Filters["search_name"] != nil {
+		whereString = whereString + " AND p.name ILIKE :search_name "
+	}
+
+	query := `SELECT q2.sum, pg.name_1c as product_group_name, v.name_1c as vid_modeli_name, p.id, p.name, p.artikul, p.description, 
+	p.material_podoshva, p.material_up, p.material_inside, p. sex, p.created_at as product_create_at ,
+	to_json(array_agg(q2)) as qnt_price,
+	to_json(images.agg) as image_registry
+	FROM qnt_price_registry q
+	join lateral (select array_agg( store_id) as store_id, size_id, sum, qnt, size_name_1c from qnt_price_registry 
+	where id = q.id group by store_id, sum, qnt, id, size_id ) as q2 on true 
+	join products p on p.id = product_id
+	join product_groups pg on p.product_group_id = pg.id
+	join vids v on p.vid_id = v.id
+	join lateral (select (array_agg( jsonb_build_object('name', image_registry.name, 'full_name', full_name, 'is_active', is_active, 'is_main', is_main))) 
+	as agg from image_registry where image_registry.product_id = p.id) as images on true
+	WHERE q.registrator_id = ` + strconv.Itoa(int(lastRegistrator)) + whereString + ` AND q.qnt > 0
+	GROUP by p.name, p.id, images.agg, pg.name_1c, v.name_1c, q2.sum
+	 ` + orderString
+	queryWithFilters := query +
+		` limit ` + strconv.Itoa(filters.Base.Take) + ` offset ` + strconv.Itoa(filters.Base.Skip)
+
+	fmt.Println(queryWithFilters)
+	utils.PrintAsJSON(filters)
+
+	rows, err := s.db.NamedQuery(queryWithFilters, filters.Filters)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var productNews_item models.ProductOnceForList
+
+		// сканируем из-за конвертации байтов в массивы
+		var imagesBytes []byte
+		var imagesArray []models.ImageRegistryShort
+
+		var qntBytes []byte
+		var qntArray []models.QntPriceRegistryGroup
+
+		var sumString string
+
+		err = rows.Scan(&sumString, &productNews_item.Product_group_name, &productNews_item.Vid_modeli_name,
+			&productNews_item.Id, &productNews_item.Name, &productNews_item.Artikul, &productNews_item.Description,
+			&productNews_item.Material_podoshva, &productNews_item.Material_up, &productNews_item.Material_inside,
+			&productNews_item.Sex, &productNews_item.Product_create_at, &qntBytes, &imagesBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		f, err := strconv.ParseFloat(strings.TrimSpace(sumString), 64)
+		if err != nil {
+			return nil, err
+		}
+		productNews_item.Sum = int64(math.Round(f))
+
+		err = json.Unmarshal(imagesBytes, &imagesArray)
+		if err != nil {
+			return nil, err
+		}
+		productNews_item.Image_registry = imagesArray
+
+		err = json.Unmarshal(qntBytes, &qntArray)
+		if err != nil {
+			return nil, err
+		}
+		productNews_item.Qnt_price = qntArray
+
+		if len(productNews_item.Image_registry) > 0 {
+			indexMain := slices.IndexFunc(productNews_item.Image_registry, func(i models.ImageRegistryShort) bool {
+				return i.Is_main
+			})
+			if indexMain != -1 {
+				productNews_item.Image_active_path = &productNews_item.Image_registry[indexMain].Full_name
+			}
+		}
+
+		productList = append(productList, productNews_item)
+
+	}
+	utils.PrintAsJSON(filters)
+
+	return &models.ProductsList{
+		Data:          productList,
+		Full_count:    0,
+		Current_count: len(productList)}, nil
 }

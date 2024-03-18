@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -44,7 +45,7 @@ func WhereAddParams(selectQuery string, params map[string]interface{}) string {
 			selectQuery = selectQuery + key + " = " + fmt.Sprintf("%v", value)
 		case string:
 			selectQuery = selectQuery + key + " = " + fmt.Sprintf(`'%s'`, value)
-		case []int, []string:
+		case []int, []int64, []string:
 			selectQuery = selectQuery + key + " IN " + SliceToWhereString(value)
 		default:
 			selectQuery = selectQuery + key + " = " + fmt.Sprintf("%v", value)
@@ -123,4 +124,17 @@ func GetSubstringIfSymbolExists(str string, symbol string) string {
 		return ""
 	}
 	return str[:index]
+}
+
+func StringToArrInt64(str string) ([]int64, error) {
+	var arr []int64
+	for _, v := range strings.Split(str, ",") {
+		num, err := strconv.Atoi(strings.TrimSpace(v))
+		if err == nil {
+			arr = append(arr, int64(num))
+		} else {
+			return nil, err
+		}
+	}
+	return arr, nil
 }

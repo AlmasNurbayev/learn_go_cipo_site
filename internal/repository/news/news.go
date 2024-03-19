@@ -29,7 +29,6 @@ func (s *RepositoryDb) List(filter *newsFilter.Filter) (*[]models.News, error) {
 	} else {
 		query = query + " LIMIT 5"
 	}
-	fmt.Println(query)
 
 	var res []models.News
 	var err = s.db.Select(&res, query)

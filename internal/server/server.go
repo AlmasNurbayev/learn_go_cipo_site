@@ -49,7 +49,7 @@ func (s *Server) Init() {
 		panic(err)
 	}
 	s.Sqlx = postgresStore.Dbx
-	s.Validator = validator.New()
+	//s.Validator = validator.New()
 	s.Mux = chi.NewRouter()
 	s.HttpServer = &http.Server{
 		Addr:         s.Cfg.Server.Addr + ":" + strconv.Itoa(s.Cfg.Server.Http_port),
@@ -58,8 +58,8 @@ func (s *Server) Init() {
 		WriteTimeout: s.Cfg.Server.Timeout,
 		IdleTimeout:  s.Cfg.Server.Idle_timeout,
 	}
-	s.Mux.Use(middleware.RequestID)
-	s.Mux.Use(middleware.Logger)
+	//s.Mux.Use(middleware.RequestID)
+	//s.Mux.Use(middleware.Logger)
 	s.Mux.Use(middleware.Recoverer)
 	s.Mux.Use(middleware.Heartbeat("/ping"))
 	s.registerNews()

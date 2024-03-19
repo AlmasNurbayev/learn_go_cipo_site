@@ -34,14 +34,24 @@ func MovedInputFiles(cfg config.Config, log *slog.Logger) (*MovedInputFilesT, er
 		if _, err := os.Stat(oldPath); err == nil {
 			err := os.Rename(oldPath, newPath)
 			if err != nil {
-				log.Error("Error moving file:", err)
-				return nil, err
+				if i == 2 {
+					// если это imageFolder, то не прерываем программу
+					log.Error("Error moving imageFolder:", err)
+				} else {
+					log.Error("Error moving file:", err)
+					return nil, err
+				}
 			} else {
 				log.Info(file.PathFile + " exists and moved successfully")
 			}
 		} else {
-			log.Error(file.PathFile + " does not exist")
-			return nil, err
+			if i == 2 {
+				// если это imageFolder, то не прерываем программу
+				log.Error(file.PathFile + " does not exist")
+			} else {
+				log.Error(file.PathFile + " does not exist")
+				return nil, err
+			}
 		}
 	}
 	return &MovedInputFilesT{Files: filesName, NewPath: folderName}, nil

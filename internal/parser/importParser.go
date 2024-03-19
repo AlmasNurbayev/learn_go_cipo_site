@@ -14,6 +14,7 @@ import (
 	"cipo_cite_server/internal/utils"
 	"fmt"
 	"slices"
+	"sort"
 	"strconv"
 )
 
@@ -241,6 +242,12 @@ func parseAndSaveProducts(mainStruct *XMLTypes.ImportType, registrator_id int64)
 	// парсим все продукты из XML
 	NewProducts := partParsers.ProductsParser(mainStruct, registrator_id,
 		*existsProductGroups, *existsProductsVids, *existsProductDesc, *existsVids)
+
+	// сортируем по первым 20 символам поля id_1c, для хронологии
+	sort.Slice(NewProducts, func(i, j int) bool {
+		return NewProducts[i].Id_1c[19:] < NewProducts[j].Id_1c[19:]
+	})
+
 	fmt.Println("products parsing count: ", len(NewProducts))
 	fmt.Println("products exists count: ", len(*existsProducts))
 

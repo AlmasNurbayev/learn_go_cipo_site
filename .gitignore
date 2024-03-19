@@ -3,3 +3,6 @@ input/**
 assets/**
 import.json
 offer.json
+migrate
+parser
+server

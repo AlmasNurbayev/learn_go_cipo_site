@@ -54,7 +54,7 @@ func (p *Parser) Run() {
 	}
 	if moved.CopyImages("assets", movedFiles.NewPath, p.Log) != nil {
 		p.Log.Error("Error copying images: ", err)
-		os.Exit(1)
+		//os.Exit(1) не выходим - продолжаем парсить если выгрузка не содержит картинок
 	}
 	// movedFiles := moved.MovedInputFilesT{
 	// 	Files: []moved.InputFilesT{
@@ -66,7 +66,12 @@ func (p *Parser) Run() {
 	utils.PrintAsJSON(movedFiles)
 
 	// init parser
-	for _, fileItem := range movedFiles.Files {
+	for index, fileItem := range movedFiles.Files {
+		if index == 2 {
+			// папку с картинками не парсим
+			continue
+		}
+
 		file, err := os.Open(fileItem.PathFile)
 		if err != nil {
 			p.Log.Error("Ошибка открытия файла:", err)

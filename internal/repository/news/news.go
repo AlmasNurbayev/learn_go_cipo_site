@@ -32,6 +32,7 @@ func (s *RepositoryDb) List(filter *newsFilter.Filter) (*[]models.News, error) {
 
 	var res []models.News
 	var err = s.db.Select(&res, query)
+
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +42,7 @@ func (s *RepositoryDb) List(filter *newsFilter.Filter) (*[]models.News, error) {
 func (s *RepositoryDb) ListById(id int64) (*[]models.News, error) {
 	//utils.PrintAsJSON(filter)
 	query := "SELECT * FROM news WHERE id = " + fmt.Sprint(id)
-	fmt.Println(query)
+	//fmt.Println(query)
 
 	var res []models.News
 	var err = s.db.Select(&res, query)

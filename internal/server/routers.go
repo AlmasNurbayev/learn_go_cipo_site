@@ -20,9 +20,11 @@ func (s *Server) registerNews() {
 	s.Mux.Get("/news", func(w http.ResponseWriter, r *http.Request) {
 		newsHandler.NewsGetAll(w, r, newsRepo, s.Log)
 	})
+	s.Log.Info("register route: news")
 	s.Mux.Get("/newsID", func(w http.ResponseWriter, r *http.Request) {
 		newsHandler.NewsGetID(w, r, newsRepo, s.Log)
 	})
+	s.Log.Info("register route: newsID")
 }
 
 func (s *Server) registerStores() {
@@ -30,6 +32,7 @@ func (s *Server) registerStores() {
 	s.Mux.Get("/stores", func(w http.ResponseWriter, r *http.Request) {
 		storeHandler.StoresGetAll(w, r, storesRepo, s.Log)
 	})
+	s.Log.Info("register route: stores")
 }
 
 func (s *Server) registerProductsFilters() {
@@ -41,6 +44,7 @@ func (s *Server) registerProductsFilters() {
 	s.Mux.Get("/productFilters", func(w http.ResponseWriter, r *http.Request) {
 		productFiltersHandler.GetAll(w, r, s.Log, storesRepo, sizeRepo, productGroupRepo, vidsRepo)
 	})
+	s.Log.Info("register route: productFilters")
 }
 
 func (s *Server) registerProduct() {
@@ -50,13 +54,15 @@ func (s *Server) registerProduct() {
 	s.Mux.Get("/productNews", func(w http.ResponseWriter, r *http.Request) {
 		productHandler.ProductNews(w, r, s.Log, qntPriceRepo, productRepo)
 	})
+	s.Log.Info("register route: productNews")
 
 	s.Mux.Get("/product", func(w http.ResponseWriter, r *http.Request) {
 		productHandler.GetById(w, r, s.Log, qntPriceRepo, productRepo)
 	})
+	s.Log.Info("register route: product")
 
 	s.Mux.Get("/products", func(w http.ResponseWriter, r *http.Request) {
 		productHandler.List(w, r, s.Log, qntPriceRepo, productRepo)
 	})
-
+	s.Log.Info("register route: products")
 }

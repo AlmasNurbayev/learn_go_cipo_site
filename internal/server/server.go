@@ -5,6 +5,7 @@ import (
 	"cipo_cite_server/internal/logger"
 	"cipo_cite_server/internal/storage/postgres"
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -16,7 +17,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	validator "github.com/go-playground/validator/v10"
+	_ "net/http/pprof"
+
 	"github.com/jmoiron/sqlx"
 )
 
@@ -28,7 +30,7 @@ type Server struct {
 	Mux        *chi.Mux
 	HttpServer *http.Server
 	Addr       string
-	Validator  *validator.Validate
+	//Validator  *validator.Validate
 }
 
 func New(version string) *Server {
@@ -38,6 +40,7 @@ func New(version string) *Server {
 }
 
 func (s *Server) Init() {
+	fmt.Println("============================")
 	s.Cfg = config.MustLoad()
 	s.Log = logger.InitLogger(s.Cfg.Config.Env)
 	s.Log.Info("init server on env: " + s.Cfg.Config.Env)
@@ -55,13 +58,32 @@ func (s *Server) Init() {
 		Addr:         s.Cfg.Server.Addr + ":" + strconv.Itoa(s.Cfg.Server.Http_port),
 		Handler:      s.Mux,
 		ReadTimeout:  s.Cfg.Server.Timeout,
-		WriteTimeout: s.Cfg.Server.Timeout,
+		WriteTimeout: 60 * time.Second,
 		IdleTimeout:  s.Cfg.Server.Idle_timeout,
 	}
-	//s.Mux.Use(middleware.RequestID)
-	//s.Mux.Use(middleware.Logger)
+	s.Mux.Use(middleware.RequestID)
+	if s.Cfg.Config.Env == "dev" {
+		s.Mux.Use(middleware.Logger)
+	}
 	s.Mux.Use(middleware.Recoverer)
 	s.Mux.Use(middleware.Heartbeat("/ping"))
+	// s.Mux.HandleFunc("/debug/pprof/", pprof.Index)
+	// s.Mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	// s.Mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	// s.Mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	// s.Mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	// s.Mux.HandleFunc("/debug/pprof/goroutine", func(w http.ResponseWriter, r *http.Request) {
+	// 	pprof.Handler("goroutine").ServeHTTP(w, r)
+	// })
+	// //s.Mux.HandleFunc("/threadcreate", pprof.Handler("threadcreate"))
+	// //s.Mux.HandleFunc("/heap", pprof.Handler("heap"))
+	// s.Mux.HandleFunc("/debug/pprof/block", func(w http.ResponseWriter, r *http.Request) {
+	// 	pprof.Handler("block").ServeHTTP(w, r)
+	// })
+	// s.Mux.HandleFunc("/debug/pprof/mutex", func(w http.ResponseWriter, r *http.Request) {
+	// 	pprof.Handler("mutex").ServeHTTP(w, r)
+	// })
+
 	s.registerNews()
 	s.registerStores()
 	s.registerProductsFilters()
@@ -79,9 +101,9 @@ func (s *Server) Run() {
 			s.Log.Error("failed to start server")
 		}
 	}()
-	s.Log.Info("starting server on " + s.Cfg.Server.Addr + ":" + strconv.Itoa(s.Cfg.Server.Http_port))
+	s.Log.Info("starting Chi server on " + s.Cfg.Server.Addr + ":" + strconv.Itoa(s.Cfg.Server.Http_port))
 	<-done
-	s.Log.Warn("stopping server on " + s.Cfg.Server.Addr + ":" + strconv.Itoa(s.Cfg.Server.Http_port))
+	s.Log.Warn("stopping Chi server on " + s.Cfg.Server.Addr + ":" + strconv.Itoa(s.Cfg.Server.Http_port))
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(s.Cfg.Server.Idle_timeout))
 

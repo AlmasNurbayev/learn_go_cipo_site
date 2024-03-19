@@ -35,7 +35,9 @@ func (s *PostgresStore) Init(env config.Envs, log *slog.Logger) (*PostgresStore,
 		":", env.DB_PASSWORD,
 		"@", env.DB_HOST, ":", fmt.Sprint(env.DB_PORT), "/", env.DB_DATABASE)
 
-	dbx, err := sqlx.Open(driverName, databaseUrl)
+	dbx, err := sqlx.Connect(driverName, databaseUrl)
+	dbx.SetMaxOpenConns(10) // Максимальное количество открытых соединений
+	dbx.SetMaxIdleConns(5)  // Максимальное количество простаивающих соединений
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", "ConnectDB", err)
 	}

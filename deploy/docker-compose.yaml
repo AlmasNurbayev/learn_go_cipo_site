@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  db-go:
+    image: postgres:16.1-alpine
+    ports:
+      - ${PGPORT_EXTERNAL}:5432
+    environment:
+      TZ: 'Asia/Almaty'
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    command: ["postgres", "-c", "shared_buffers=1GB", "-c", "max_connections=100"]  
+    volumes:
+      - ./db-go/:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  parser_server:
+    image: golang:1.22.1
+    depends_on:
+    - db-go
+    # используем готовые бинарники для запуска
+    command: bash -c "chmod +x ./parser && chmod +x ./migrate && chmod +x ./server && ./migrate && ./server"
+    working_dir: /app
+    volumes:
+      - ./parser_server/:/app
+    ports:
+      - 4004:4004
+      - 4003:4003
+    environment:
+      TZ: 'Asia/Almaty'
+    restart: unless-stopped
